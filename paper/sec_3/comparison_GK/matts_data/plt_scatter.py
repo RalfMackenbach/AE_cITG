@@ -96,25 +96,6 @@ ax['nfp4'].set_title(r'$N_{fp}=4$')
 ax['nfp5'].set_title(r'$N_{fp}=5$')
 ax['all'].set_title(r'$N_{fp}=\{2,3,4,5\}$')
 
-# ax[0].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
-# ax[0].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
-# ax[0].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
-# ax[0].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
-# ax[0].set_xlabel(r'$\widehat{A}$')
-# ax[0].set_ylabel(r'$\widehat{Q}$')
-# ax[0].set_xscale('log')
-# ax[0].set_yscale('log')
-# # same thing for second plot, but with limits
-# ax[1].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
-# ax[1].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
-# ax[1].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
-# ax[1].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
-# ax[1].set_xlabel(r'$\widehat{A}$')
-# ax[1].set_ylabel(r'$\widehat{Q}$')
-# ax[1].set_xscale('log')
-# ax[1].set_yscale('log')
-# ax[1].set_xlim([2e-3,5e-1])
-# ax[1].set_ylim([1e-3,1e3])
 
 # fit a 3/2 power law to the data
 AEs = np.asarray(np.concatenate((nfp4_AE,nfp3_AE,nfp2_AE,nfp5_AE))).flatten()
@@ -123,6 +104,7 @@ fit_func = lambda logx, loga: loga + 3/2*logx
 # fit the data
 from scipy.optimize import curve_fit
 popt, pcov = curve_fit(fit_func,np.log(AEs),np.log(Qs))
+print('loga: ',popt[0])
 # plot the fit
 x_fit = np.linspace(1e-3,1e0,100)
 y_fit = np.exp(fit_func(np.log(x_fit),*popt))
