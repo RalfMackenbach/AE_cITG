@@ -24,6 +24,20 @@ idx_nfp3 = np.asarray([i for i in range(len(tube_names)) if 'nfp3' in tube_names
 idx_nfp4 = np.asarray([i for i in range(len(tube_names)) if 'nfp4' in tube_names[i]])
 idx_nfp5 = np.asarray([i for i in range(len(tube_names)) if 'nfp5' in tube_names[i]])
 
+# plot some flux tubes of different Nfp
+# dict2 = AE_dictionary(tube_data_3,idx_nfp2[9])
+# dict3 = AE_dictionary(tube_data_3,idx_nfp3[9])
+# dict4 = AE_dictionary(tube_data_3,idx_nfp4[9])
+# dict5 = AE_dictionary(tube_data_3,idx_nfp5[9])
+# dict2 = function_extender(dict2)
+# dict3 = function_extender(dict3)
+# dict4 = function_extender(dict4)
+# dict5 = function_extender(dict5)
+# plot_dict(dict2)
+# plot_dict(dict3)
+# plot_dict(dict4)
+# plot_dict(dict5)
+
 
 # load AE data
 file_path = "AE_processed_data/"
@@ -48,29 +62,59 @@ nfp5_AE = (AE_3[idx_nfp5]).flatten()
 nfp5_Q = (Q_3[idx_nfp5]).flatten()
 
 # plot the scatter. Many points (>10^5) so use alpha to make it more visible
-fig, ax = plt.subplots(1,2,constrained_layout=True,figsize=(8,4))
+fig, ax = plt.subplot_mosaic([['nfp2','.','nfp3'],
+                              ['.','all','.'],
+                              ['nfp4','.','nfp5']],constrained_layout=True,figsize=(12,8))
 s_val=1
 alpha_val=0.05
 marker_shape='o'
-ax[0].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
-ax[0].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
-ax[0].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
-ax[0].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
-ax[0].set_xlabel(r'$\widehat{A}$')
-ax[0].set_ylabel(r'$\widehat{Q}$')
-ax[0].set_xscale('log')
-ax[0].set_yscale('log')
-# same thing for second plot, but with limits
-ax[1].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
-ax[1].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
-ax[1].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
-ax[1].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
-ax[1].set_xlabel(r'$\widehat{A}$')
-ax[1].set_ylabel(r'$\widehat{Q}$')
-ax[1].set_xscale('log')
-ax[1].set_yscale('log')
-ax[1].set_xlim([2e-3,5e-1])
-ax[1].set_ylim([1e-3,1e3])
+
+# plot nfp2 on top left, nfp3 on top right, nfp4 on center left, nfp5 on center right, all on bottom
+ax['nfp2'].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
+ax['nfp3'].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
+ax['nfp4'].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
+ax['nfp5'].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
+ax['all'].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
+ax['all'].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
+ax['all'].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
+ax['all'].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
+
+
+# set labels, scales, and limits
+for key in ax.keys():
+    ax[key].set_xlabel(r'$\widehat{A}$')
+    ax[key].set_ylabel(r'$\widehat{Q}$')
+    ax[key].set_xscale('log')
+    ax[key].set_yscale('log')
+    ax[key].set_xlim([1e-3,1e0])
+    ax[key].set_ylim([1e-2,1e3])
+
+# add titles
+ax['nfp2'].set_title(r'$N_{fp}=2$')
+ax['nfp3'].set_title(r'$N_{fp}=3$')
+ax['nfp4'].set_title(r'$N_{fp}=4$')
+ax['nfp5'].set_title(r'$N_{fp}=5$')
+ax['all'].set_title(r'$N_{fp}=\{2,3,4,5\}$')
+
+# ax[0].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
+# ax[0].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
+# ax[0].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
+# ax[0].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
+# ax[0].set_xlabel(r'$\widehat{A}$')
+# ax[0].set_ylabel(r'$\widehat{Q}$')
+# ax[0].set_xscale('log')
+# ax[0].set_yscale('log')
+# # same thing for second plot, but with limits
+# ax[1].scatter(nfp4_AE,nfp4_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:blue')
+# ax[1].scatter(nfp3_AE,nfp3_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:orange')
+# ax[1].scatter(nfp2_AE,nfp2_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:green')
+# ax[1].scatter(nfp5_AE,nfp5_Q,alpha=alpha_val,s=s_val,marker=marker_shape,color='tab:red')
+# ax[1].set_xlabel(r'$\widehat{A}$')
+# ax[1].set_ylabel(r'$\widehat{Q}$')
+# ax[1].set_xscale('log')
+# ax[1].set_yscale('log')
+# ax[1].set_xlim([2e-3,5e-1])
+# ax[1].set_ylim([1e-3,1e3])
 
 # fit a 3/2 power law to the data
 AEs = np.asarray(np.concatenate((nfp4_AE,nfp3_AE,nfp2_AE,nfp5_AE))).flatten()
@@ -82,15 +126,18 @@ popt, pcov = curve_fit(fit_func,np.log(AEs),np.log(Qs))
 # plot the fit
 x_fit = np.linspace(1e-3,1e0,100)
 y_fit = np.exp(fit_func(np.log(x_fit),*popt))
-ax[1].plot(x_fit,y_fit,'k--',label=r'$Q \propto A^{3/2}$')
+# add to all plots
+for key in ax.keys():
+    ax[key].plot(x_fit,y_fit,color='black',linestyle='--',label=r'$Q \propto A^{3/2}$')
+    ax[key].legend(loc='upper right',fontsize=8)
 
 
 # add legend manually with alpha=1
-ax[1].scatter([],[],label=r'$N_{fp}=2$',alpha=1,s=5,marker=marker_shape,color='tab:green')
-ax[1].scatter([],[],label=r'$N_{fp}=3$',alpha=1,s=5,marker=marker_shape,color='tab:orange')
-ax[1].scatter([],[],label=r'$N_{fp}=4$',alpha=1,s=5,marker=marker_shape,color='tab:blue')
-ax[1].scatter([],[],label=r'$N_{fp}=5$',alpha=1,s=5,marker=marker_shape,color='tab:red')
-ax[1].legend(loc='upper right',fontsize=8)
+# ax[1].scatter([],[],label=r'$N_{fp}=2$',alpha=1,s=5,marker=marker_shape,color='tab:green')
+# ax[1].scatter([],[],label=r'$N_{fp}=3$',alpha=1,s=5,marker=marker_shape,color='tab:orange')
+# ax[1].scatter([],[],label=r'$N_{fp}=4$',alpha=1,s=5,marker=marker_shape,color='tab:blue')
+# ax[1].scatter([],[],label=r'$N_{fp}=5$',alpha=1,s=5,marker=marker_shape,color='tab:red')
+# ax[1].legend(loc='upper right',fontsize=8)
 
 
 # save the figure
