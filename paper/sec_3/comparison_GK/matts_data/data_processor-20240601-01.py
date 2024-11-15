@@ -57,13 +57,15 @@ data_Q      = load_data(file_Q)
 
 
 # check number of tubes
-n_tubes = 1000  #data['n_tubes']
+n_tubes = data['n_tubes']
 # initialize arrays
 AEs = np.zeros(n_tubes)
 Qs = data_Q['Q_avgs_without_FSA_grad_x'][0:n_tubes]
 # loop over tubes in parallel
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
+    print('Number of processors: ',mp.cpu_count())
+    print('Number of tubes: ',n_tubes)
     results = [pool.starmap_async(calc_AE, [(data,idx_tube,False)]) for idx_tube in range(n_tubes)]
     AEs = [r.get() for r in results]
 
@@ -71,20 +73,20 @@ if __name__ == '__main__':
     file_path = "AE_processed_data/"
     np.save(file_path+file_name.split('.')[0]+'_AE.npy',AEs)
 
-    AEs = np.asarray(AEs).flatten()
-    Qs = np.asarray(Qs).flatten()
+    # AEs = np.asarray(AEs).flatten()
+    # Qs = np.asarray(Qs).flatten()
 
-    # scatter
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.scatter(AEs,Qs)
-    plt.xscale('log')
-    plt.yscale('log')
-    # do a linear fit and print the slope
-    from scipy.stats import linregress
-    slope, intercept, r_value, p_value, std_err = linregress(np.log(AEs),np.log(Qs))
-    print('Slope: ',slope)
+    # # scatter
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.scatter(AEs,Qs)
+    # plt.xscale('log')
+    # plt.yscale('log')
+    # # do a linear fit and print the slope
+    # from scipy.stats import linregress
+    # slope, intercept, r_value, p_value, std_err = linregress(np.log(AEs),np.log(Qs))
+    # print('Slope: ',slope)
     
-    plt.xlabel('AE')
-    plt.ylabel('Q')
-    plt.show()
+    # plt.xlabel('AE')
+    # plt.ylabel('Q')
+    # plt.show()

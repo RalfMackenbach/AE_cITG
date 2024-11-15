@@ -5,7 +5,7 @@ import multiprocessing as mp
 import source.ae_ITG as ae
 
 
-def calc_AE(data,idx_tube):
+def calc_AE(data,idx_tube,plot=True):
     dict = AE_dictionary(data,idx_tube)
     dict = function_extender(dict)
     # first, we construct the length-scales
@@ -42,7 +42,9 @@ def calc_AE(data,idx_tube):
     dict['k_alpha_arr'] = k_alpha_arr
     dict['k_psi_arr'] = k_psi_arr
     dict['AE_val'] = AE
-    print(idx_tube,AE)
+    if plot:
+        plot_dict(dict)
+    print('Tube: ',idx_tube,' AE: ',AE)
     return AE
 
 
@@ -62,19 +64,29 @@ Qs = data_Q['Q_avgs_without_FSA_grad_x'][0:n_tubes]
 # loop over tubes in parallel
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
-    results = [pool.apply_async(calc_AE, args=(data,i)) for i in range(n_tubes)]
+    print('Number of processors: ',mp.cpu_count())
+    print('Number of tubes: ',n_tubes)
+    results = [pool.starmap_async(calc_AE, [(data,idx_tube,False)]) for idx_tube in range(n_tubes)]
     AEs = [r.get() for r in results]
 
     # save the data as numpy array
     file_path = "AE_processed_data/"
     np.save(file_path+file_name.split('.')[0]+'_AE.npy',AEs)
 
+    # AEs = np.asarray(AEs).flatten()
+    # Qs = np.asarray(Qs).flatten()
 
-    # scatter
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.hexbin(AEs,Qs,xscale='log',yscale='log',gridsize=50)
-    plt.xlabel('AE')
-    plt.ylabel('Q')
-    # make log scale
-    plt.show()
+    # # scatter
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.scatter(AEs,Qs)
+    # plt.xscale('log')
+    # plt.yscale('log')
+    # # do a linear fit and print the slope
+    # from scipy.stats import linregress
+    # slope, intercept, r_value, p_value, std_err = linregress(np.log(AEs),np.log(Qs))
+    # print('Slope: ',slope)
+    
+    # plt.xlabel('AE')
+    # plt.ylabel('Q')
+    # plt.show()

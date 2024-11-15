@@ -49,8 +49,8 @@ def calc_AE(data,idx_tube,plot=True):
 
 
 # load the data
-file_name   = "20240726-01-assembleFluxTubeTensor_vacuum_nz96.pkl"
-file_Q      = "20240726-01-random_stellarator_equilibria_and_GX_gx_results_gradxRemoved.pkl"
+file_name   = "20241103-01-assembleFluxTubeTensor_multiNfp_finiteBeta_randomAspect_nz96_51200tubes.pkl"
+file_Q      = "20241103-01-random_stellarator_equilibria_finiteBeta_randomAspect_allNFP_GX_results_combined.pkl"
 data        = load_data(file_name)
 data_Q      = load_data(file_Q)
 
