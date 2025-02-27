@@ -22,7 +22,7 @@ def integrate_2D_AE_weighting(f, method='simpson', **kwargs):
 
     Parameters:
     f (function): The integrand without the exponential factor exp(-x)*exp(-y)/sqrt(y). Order of arguments is (x, y).
-    method (str): The method to be used for integration. Default is 'gauss_hermite'.
+    method (str): The method to be used for integration. Default is 'simpson'.
 
     Returns:
     float: The result of the integration.
@@ -186,7 +186,7 @@ def solver(f, x0, method='fsolve', **kwargs):
         return res
     
     if method == 'iterative':
-        # Solve the system of equations
+        # Solve the system of equations iteratively
         x = x0
         abs_err = 1.0
         rel_err = 1.0
