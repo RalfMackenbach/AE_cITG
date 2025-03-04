@@ -3,7 +3,6 @@ import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
 import pandas as pd
-import os
 
 path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
 

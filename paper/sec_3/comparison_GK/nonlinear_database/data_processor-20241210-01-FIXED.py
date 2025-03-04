@@ -2,7 +2,6 @@ from IO import *
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
-import source.OLD_ae_ITG as ae
 import pandas as pd
 
 path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'

@@ -2,7 +2,6 @@ from IO import *
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
-import source.OLD_ae_ITG as ae
 import pandas as pd
 import h5py
 
