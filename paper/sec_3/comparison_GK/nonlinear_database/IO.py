@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import source.ae as ae
 
 
+matts_path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
+AE_path    = "/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/"
+
+
+
 def load_data(file):
     with open(file, "rb") as f:
         data = pickle.load(f)
@@ -138,7 +143,7 @@ def function_extender(dict):
 
 
 
-def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbose=True):
+def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbose=True,length_scale='rho'):
     # read data
     dict = AE_dictionary(data,idx_tube)
     if func_ext:
@@ -150,8 +155,13 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     # construct linspace -1,1 for arc-length coordinate
     l       = np.linspace(-1.0,1.0,len(B))
     # construct perpendicular lengthscales
-    Dx = 1.0
-    Dy = 1.0
+    if length_scale == 'rho':
+        Dx = dict['gds22_over_shat_squared']
+        Dy = dict['gds2']
+    # if length-scale is fixed, replace Dx and Dy with ones
+    if length_scale=='fixed':
+        Dx = np.ones_like(B)
+        Dy = np.ones_like(B)
     w_alpha =-grad_drift_y*Dx
     w_psi   = grad_drift_x*Dy
     # now calculate the available energy array
@@ -160,7 +170,7 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     AE_arr = AE_dict['AE']
     k_alpha_arr = AE_dict['k_alpha']
     k_psi_arr = AE_dict['k_psi']
-    AE_total = np.trapezoid(AE_arr/B,l)/np.trapezoid(1/B,l)
+    AE_total = np.trapezoid(Dx * Dy * AE_arr/B,l)/np.trapezoid(Dx * Dy/B,l)
     # store in dict
     result_dict = {
         'AE_arr': np.asarray(AE_arr),

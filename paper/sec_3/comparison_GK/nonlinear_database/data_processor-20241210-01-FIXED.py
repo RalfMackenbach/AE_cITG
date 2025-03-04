@@ -2,9 +2,8 @@ from IO import *
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
-import pandas as pd
 
-path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
+path = IO.matts_path
 
 # load the data
 file_name   = path+"/20241210-01-assembleFluxTubeTensor_allConfigs_filtered.pkl"
@@ -21,6 +20,8 @@ n_tubes = data['n_tubes']
 # initialize arrays
 AEs = np.zeros(n_tubes)
 Qs = data_Q['Q_avgs_without_FSA_grad_x'][0:n_tubes]
+
+
 # loop over tubes in parallel
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     results = [pool.starmap_async(calc_AE, [(data,idx_tube,Qs[idx_tube],0.9,3.0)]) for idx_tube in range(n_tubes)]
     results_list = [r.get() for r in results]
     # save data as hdf5
-    file_path = "/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/"
+    file_path = IO.AE_path
     # retrieve the 2024... part of the file name
     file_save = file_name.split('-')[-3]+'.hdf5'
     # get rid of the /

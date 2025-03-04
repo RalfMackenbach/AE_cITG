@@ -2,15 +2,17 @@ from IO import *
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
-import pandas as pd
 
-path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
+path = IO.matts_path
 
 # load the data
 file_name   = path+"/20241210-01-assembleFluxTubeTensor_allConfigs_filtered.pkl"
 file_Q      = path+"/20241210-01-GX_results_for_random_gradients_allConfigs_filtered.pkl"
 data        = load_data(file_name)
 data_Q      = load_data(file_Q)
+
+
+
 
 
 # check number of tubes
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     results = [pool.starmap_async(calc_AE, [(data,idx_tube,Qs[idx_tube],fprims[idx_tube],tprims[idx_tube])]) for idx_tube in range(n_tubes)]
     results_list = [r.get() for r in results]
     # save data as hdf5
-    file_path = "/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/"
+    file_path = IO.AE_path
     # retrieve the 2024... part of the file name
     file_save = file_name.split('-')[-3]+'.hdf5'
     # get rid of the /
