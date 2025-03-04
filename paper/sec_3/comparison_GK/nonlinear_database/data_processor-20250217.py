@@ -1,4 +1,5 @@
 from IO import *
+import IO
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
