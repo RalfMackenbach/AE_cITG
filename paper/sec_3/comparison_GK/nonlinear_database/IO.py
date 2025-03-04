@@ -156,10 +156,10 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     l       = np.linspace(-1.0,1.0,len(B))
     # construct perpendicular lengthscales
     if length_scale == 'rho':
-        Dx = dict['gds22_over_shat_squared']
-        Dy = dict['gds2']
+        Dx = np.sqrt(dict['gds22_over_shat_squared'])
+        Dy = np.sqrt(dict['gds2'])
     # if length-scale is fixed, replace Dx and Dy with ones
-    if length_scale=='fixed':
+    if length_scale == 'fixed':
         Dx = np.ones_like(B)
         Dy = np.ones_like(B)
     w_alpha =-grad_drift_y*Dx
