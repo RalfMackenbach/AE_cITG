@@ -2,10 +2,10 @@ from IO import *
 import numpy as np
 import scipy.integrate as spi
 import multiprocessing as mp
-import source.ae_ITG as ae
+import source.OLD_ae_ITG as ae
 import pandas as pd
 
-path = '/misc/ITG_databse/matts_data'
+path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
 
 # load the data
 file_name   = path+"/20241210-01-assembleFluxTubeTensor_allConfigs_filtered.pkl"
@@ -28,16 +28,12 @@ if __name__ == '__main__':
     print('Number of tubes: ',n_tubes)
     # use calc_AE from IO.py
     results = [pool.starmap_async(calc_AE, [(data,idx_tube,Qs[idx_tube],fprims[idx_tube],tprims[idx_tube])]) for idx_tube in range(n_tubes)]
-    AEs = [r.get() for r in results]
-
-    # AEs is now list of dictionaries. We convert it to a pandas dataframe
-    AEs_df = pd.DataFrame(AEs)
-    # order is AE_arr, k_alpha_arr, k_psi_arr, w_alpha, w_psi, B, AE_val, tube_idx, w_n, w_T, Q
-    # mixed arrays and scalars.
+    results_list = [r.get() for r in results]
     # save data as hdf5
-    file_path = "AE_processed_data/"
+    file_path = "/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/"
     # retrieve the 2024... part of the file name
-    file_save = file_name.split('-')[0]
-    # remove the 'matts_data/' part
-    file_save = file_save.split('/')[1]
-    AEs_df.to_hdf(file_path+file_save+'-RANDOM-AE_data.h5', key=file_name, mode='w')
+    file_save = file_name.split('-')[-3]+'.hdf5'
+    # get rid of the /
+    file_save = file_save.split('/')[-1]
+    print('Saving to: ',file_path+file_save)
+    save_to_hdf5(results_list,file_path,file_save)

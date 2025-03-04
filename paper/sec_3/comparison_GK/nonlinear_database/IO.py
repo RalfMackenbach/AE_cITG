@@ -1,9 +1,9 @@
 import os
 import pickle
 import numpy as np
+import h5py
 import matplotlib.pyplot as plt
-import source.ae_ITG as ae
-import scipy.integrate as spi
+import source.ae as ae
 
 
 def load_data(file):
@@ -88,7 +88,7 @@ def AE_dictionary_hdf5(data,idx):
     dict['grad(x)Xgrad(y)'] = np.sqrt(dict['gds2'] * dict['gds22_over_shat_squared'] - dict['gds21_over_shat']**2)  # note that due to linear interpolation
                                                                                                                     # in the GX routines and factors of
                                                                                                                     # dx/psi and dy/alpha this is NOT
-                                                                                                                    # equal to unity
+                                                                                                                    # exactly equal to |B|
     # add name 
     dict['tube_name'] = name_key
     # nfp is zero for tokamaks
@@ -154,22 +154,14 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     Dy = 1.0
     w_alpha =-grad_drift_y*Dx
     w_psi   = grad_drift_x*Dy
-    # now calculate the available energy at each l
-    AE_arr  = np.zeros_like(l)
-    k_alpha_arr = np.zeros_like(l)
-    k_psi_arr = np.zeros_like(l)
-    for idx, _ in np.ndenumerate(AE_arr):
-        idx = idx[0]
-        AE_dict = ae.calculate_AE(w_alpha[idx],w_psi[idx],w_n,w_T)
-        AE_arr[idx] = AE_dict['AE']
-        k_alpha_arr[idx] = AE_dict['k_alpha']
-        k_psi_arr[idx] = AE_dict['k_psi']
-
-    # now do integral of AE_arr
-    AE = spi.simpson(AE_arr/B,x=l)/spi.simpson(1/B,x=l)
-
-    # construct dict with AE, AE_arr, k_alpha, k_psi
-    # also save inputs w_alpha, w_psi, B
+    # now calculate the available energy array
+    AE_dict = ae.calculate_AE_arr(w_T,w_n,w_alpha,w_psi)
+    # do the integral to find the total
+    AE_arr = AE_dict['AE']
+    k_alpha_arr = AE_dict['k_alpha']
+    k_psi_arr = AE_dict['k_psi']
+    AE_total = np.trapezoid(AE_arr/B,l)/np.trapezoid(1/B,l)
+    # store in dict
     result_dict = {
         'AE_arr': np.asarray(AE_arr),
         'k_alpha_arr': np.asarray(k_alpha_arr),
@@ -178,12 +170,10 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
         'w_psi': np.asarray(w_psi),
         'B': np.asarray(B)
     }
-
     if plot:
         plot_dict(result_dict)
-    
-    # add AE_val and tube_idx to dict
-    result_dict['AE_val'] = AE
+    # add AE total to dict
+    result_dict['AE_val'] = AE_total
     # if Q is given, add it to dict
     if Q is not None:
         result_dict['Q'] = Q
@@ -197,7 +187,7 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     result_dict['nfp'] = dict['nfp']
 
     if verbose:
-        print('Density: ',w_n,' Temperature: ',w_T, ' AE: ',AE, ' Tube: ',idx_tube)
+        print(f'Density: {w_n:+.3f} Temperature: {w_T:+.3f} AE: {AE_total:+.3f} Tube: {idx_tube}')
          # 'Tube: ',idx_tube,' AE: ',AE)
     return result_dict
 
@@ -217,3 +207,33 @@ def plot_dict(dict):
             axs[i].set_title(key)
             axs[i].set_xlim(-1,1)
     plt.show()
+
+
+
+def save_to_hdf5(list,save_path,save_name):
+    # save list of result_dicts to hdf5
+    # structure should be tube_name from result_dict as key, with the rest of the dict as values
+    # first get the tube names
+    tube_names = [list[i][0]['tube_name'] for i in range(len(list))]
+    # get the keys of the dicts
+    keys = list[0][0].keys()
+    # create a dictionary for each tube
+    tube_dict = {}
+    for i, tube in enumerate(tube_names):
+        tube_dict[tube] = {}
+        for key in keys:
+            tube_dict[tube][key] = list[i][0][key]
+    # save the dictionary using h5py
+    # first check if the path exists
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    # make the file name
+    file_name = save_path + save_name
+    # open the file
+    with h5py.File(file_name, 'w') as f:
+        for tube in tube_dict.keys():
+            f.create_group(tube)
+            for key in keys:
+                f[tube].create_dataset(key, data=tube_dict[tube][key])
+    print('Data saved to: ',file_name)
+

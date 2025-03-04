@@ -143,7 +143,7 @@ def solver(f, x0, method='fsolve', **kwargs):
     kwargs.setdefault('bounds', (-np.inf, np.inf))
     kwargs.setdefault('n_iter', 10000)
     kwargs.setdefault('iter_abs_tol', 1e-8)
-    kwargs.setdefault('iter_rel_tol', 1e-2)
+    kwargs.setdefault('iter_rel_tol', 1e-4)
 
 
 

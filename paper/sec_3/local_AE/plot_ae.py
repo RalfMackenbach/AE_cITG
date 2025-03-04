@@ -1,130 +1,93 @@
-# Here we plot the AE. The plot is saved in the folder plots as AE.png
-import source.AE_ITG as ae
+import source.ae as sua
 import numpy as np
 import multiprocessing as mp
 import matplotlib.pyplot as plt
-
-# enable latex
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
+# make grid of omega_alpha and omega_psi [-10,10]x[-10,10]
+res = 50
+w_alpha = np.linspace(-10, 10, res)
+w_psi = np.linspace(-10, 10, res)
+w_alpha_t, w_psi_t = np.meshgrid(w_alpha, w_psi)
 
-def n_significant_digits_ceil(x,n=1):
-    # check if zero
-    if x == 0.0:
-        return 0.0
-    elif x>0.0:
-        # find the order of magnitude
-        order = np.floor(np.log10(np.abs(x)))
-        # divide out the order of magnitude
-        x = x/10**order
-        # round to n significant digits
-        x = np.ceil(x*10**n)/10**n
-        return x*10**order
+# give values to omega_n and omega_T
+w_n = 2.0
+w_T = 10.0
 
-def n_significant_digits_floor(x,n=1):
-    # check if zero
-    if x == 0.0:
-        return 0.0
-    elif x>0.0:
-        # find the order of magnitude
-        order = np.floor(np.log10(np.abs(x)))
-        # divide out the order of magnitude
-        x = x/10**order
-        # round to n significant digits
-        x = np.floor(x*10**n)/10**n
-        return x*10**order
+# calculate AE for each point in the grid
+AE_full = np.zeros_like(w_alpha_t)
+kpsi_full = np.zeros_like(w_alpha_t)
+kalpha_full = np.zeros_like(w_alpha_t)
 
-res=100
-
-# span a range of values for w_n,w_T
-w_n = np.linspace(-10.0,10.0,res)
-w_T = np.linspace(-10.0,10.0,res)
-
-# make a list of w_alpha and w_psi values
-w_alpha = -1 * np.asarray([0.0,1.0,1.0])
-w_psi   =      np.asarray([1.0,0.0,1.0])
-
-# make a meshgrid for w_n w_T, and w_alpha
-_, _, w_alpha   = np.meshgrid(w_n, w_T, w_alpha)
-w_n, w_T, w_psi     = np.meshgrid(w_n, w_T, w_psi)
-
-# make container for AE, k_alpha, k_psi
-AE = np.zeros_like(w_alpha)
-k_alpha = np.zeros_like(w_alpha)
-k_psi = np.zeros_like(w_alpha)
-
-# calculate the AE parallel
-def calculate_AE(w_alpha, w_psi, w_n, w_T,idx):
-    #print(idx)
-    dict = ae.calculate_AE(w_alpha[idx], w_psi[idx], w_n[idx], w_T[idx])
+def calculate_AE(idx):
+    dict =  sua.calculate_AE_arr(w_T, w_n, np.asarray([w_alpha_t[idx]]), np.asarray([w_psi_t[idx]]))
+    print(f'w_alpha = {w_alpha_t[idx]:+.2f}, w_psi = {w_psi_t[idx]:+.2f}, AE = {dict["AE"][0]:+.2f}', end='\r')
     return dict
 
-# calculate the AE using multiprocessing
+# do the calculation in parallel
 if __name__ == '__main__':
-    mp.freeze_support()
-    # get number of processors
-    n_proc = mp.cpu_count()
+    pool = mp.Pool(mp.cpu_count())
+    results = pool.map(calculate_AE, [idx for idx, _ in np.ndenumerate(w_alpha_t)])
+    pool.close()
+    pool.join()
 
-    # calculate the AE in the isodynamic limit using multiprocessing
-    with mp.Pool(n_proc) as pool:
-        results = [pool.apply_async(calculate_AE, args=(w_alpha,w_psi,w_n,w_T,idx)) for idx in np.ndindex(w_alpha.shape)]
-        for idx, res in zip(np.ndindex(w_alpha.shape),results):
-            dict = res.get()
-            AE[idx] = dict['AE']
-            k_alpha[idx] = dict['k_alpha']
-            k_psi[idx] = dict['k_psi']
+    # unpack results and store in array
+    for idx, vals in enumerate(results):
+        i, j = np.unravel_index(idx, w_alpha_t.shape)
+        AE_full[i, j] = vals["AE"][0]
+        kpsi_full[i, j] = vals["k_psi"][0]
+        kalpha_full[i, j] = vals["k_alpha"][0]
 
-    # save results
-    np.save('plots/data/AE.npy',AE)
-    np.save('plots/data/k_alpha.npy',k_alpha)
-    np.save('plots/data/k_psi.npy',k_psi)
+    # plot the results
+    import matplotlib.pyplot as plt
+    scale = 3/4
+    lvl_res = 25
+    AE_full = np.log10(AE_full)
+    AE_max = 1.0
+    AE_min = -1
+    print('\n')
+    print(f"AE_min = {AE_full.min()}")
+    print(f"AE_max = {AE_full.max()}")
+    kpsi_max = 3.4
+    kalpha_max = 3.2
+    lvls_AE = np.linspace(AE_min, AE_max, lvl_res)
+    lvls_kpsi = np.linspace(-kpsi_max, kpsi_max, lvl_res)
+    lvls_kalpha = np.linspace(-kalpha_max, kalpha_max, lvl_res)
 
-    # plot the AE, k_alpha, k_psi
-    scaling_fac=3/4
-    fig, ax = plt.subplots(3,3,figsize=(scaling_fac*8.0,scaling_fac*8.0),constrained_layout=True,sharex=True,sharey=True)
-    # row 1 has the AE, row 2 the k_alpha, row 3 the k_psi
-    # column corresponds to w_alpha and w_psi idx
-
-    # find maximal and minimal AE, k_alpha, k_psi
-    lvls_res    = 25
-    AE_max      = np.nanmax(AE)
-    AE_min      = 0.0
-    k_alpha_max = np.nanmax(k_alpha)
-    k_alpha_min = np.nanmin(k_alpha)
-    k_psi_max   = np.nanmax(k_psi)
-    k_psi_min   = np.nanmin(k_psi)
-    AE_lvls     = np.linspace(AE_min,AE_max,lvls_res)
-    k_alpha_lvls= np.linspace(k_alpha_min,k_alpha_max,lvls_res)
-    k_psi_lvls  = np.linspace(k_psi_min,k_psi_max,lvls_res)
-    for i in range(3):
-        ax[0,i].contourf(w_n[:,:,i],w_T[:,:,i],AE[:,:,i],levels=AE_lvls,cmap='gist_heat_r')
-        ax[1,i].contourf(w_n[:,:,i],w_T[:,:,i],k_alpha[:,:,i],levels=k_alpha_lvls,cmap='viridis')
-        ax[2,i].contourf(w_n[:,:,i],w_T[:,:,i],k_psi[:,:,i],levels=k_psi_lvls,cmap='viridis')
-
-
-    # set labels, only on the left and bottom plots
-    ax[2,0].set_xlabel(r'$\hat{\omega}_n$')
-    ax[2,1].set_xlabel(r'$\hat{\omega}_n$')
-    ax[2,2].set_xlabel(r'$\hat{\omega}_n$')
-    ax[0,0].set_ylabel(r'$\hat{\omega}_T$')
-    ax[1,0].set_ylabel(r'$\hat{\omega}_T$')
-    ax[2,0].set_ylabel(r'$\hat{\omega}_T$')
-
-    # add colorbars to rows, to the right of the rows
-    cbar1 = fig.colorbar(ax[0,2].contourf(w_n[:,:,2],w_T[:,:,2],AE[:,:,2],levels=AE_lvls,cmap='gist_heat_r'),ax=ax[0,2])
-    cbar2 = fig.colorbar(ax[1,2].contourf(w_n[:,:,2],w_T[:,:,2],k_alpha[:,:,2],levels=k_alpha_lvls,cmap='viridis'),ax=ax[1,2])
-    cbar3 = fig.colorbar(ax[2,2].contourf(w_n[:,:,2],w_T[:,:,2],k_psi[:,:,2],levels=k_psi_lvls,cmap='viridis'),ax=ax[2,2])
-    # add labels to the colorbars
-    cbar1.set_label(r'$\widehat{A}$')
-    cbar2.set_label(r'$\hat{\kappa}_{\alpha}$')
-    cbar3.set_label(r'$\hat{\kappa}_{\psi}$')
-    # set ticks only at max and min
-    cbar1.set_ticks([AE_min,AE_max])
-    cbar2.set_ticks([k_alpha_min,k_alpha_max])
-    cbar3.set_ticks([k_psi_min,k_psi_max])
-
+    fig, ax = plt.subplots(1, 3, figsize=(scale*8.0, scale*8.0/2.4), constrained_layout=True)
     
+    # Plot AE_full
+    cf0 = ax[0].contourf(w_psi_t, w_alpha_t, AE_full, levels=lvls_AE, cmap='gist_heat_r', extend='min')
+    cbar0 = plt.colorbar(cf0, ax=ax[0], orientation='horizontal', location='top', ticks=[AE_min, AE_max])
+    cbar0.set_label(r'$\log_{10} \widehat{A}$')
+    ax[0].set_xlabel(r'$\hat{\omega}_{\psi}$')
+    ax[0].set_ylabel(r'$\hat{\omega}_{\alpha}$')
+    
+    # Plot kpsi_full
+    cf1 = ax[2].contourf(w_psi_t, w_alpha_t, kpsi_full, levels=lvls_kpsi, cmap='PiYG')
+    cbar1 = plt.colorbar(cf1, ax=ax[2], orientation='horizontal', location='top', ticks=[-kpsi_max, 0, kpsi_max])
+    cbar1.set_label(r'$\hat{\kappa}_{\psi}$')
+    ax[2].set_xlabel(r'$\hat{\omega}_{\psi}$')
+    ax[2].set_yticklabels([])  # Suppress y labels
+    ax[2].set_ylabel(None) # Suppress y labels
+    
+    # Plot kalpha_full
+    cf2 = ax[1].contourf(w_psi_t, w_alpha_t, kalpha_full, levels=lvls_kalpha, cmap='RdBu_r')
+    cbar2 = plt.colorbar(cf2, ax=ax[1], orientation='horizontal', location='top', ticks=[-kalpha_max, 0, kalpha_max])
+    cbar2.set_label(r'$\hat{\kappa}_{\alpha}$')
+    ax[1].set_xlabel(r'$\hat{\omega}_{\psi}$')
+    ax[1].set_yticklabels([])  # Suppress y labels
+    ax[1].set_ylabel(None) # Suppress y labels
 
-    plt.savefig('plots/AE.png',dpi=1000)
+    # add a plot of the path of a circular tokamak (walpha = cos(theta), wpsi = sin(theta))
+    # theta = np.linspace(-np.pi, np.pi, 100)
+    # a = 2.0
+    # w_psi_path = a*np.sin(theta)
+    # w_alpha_path = a*np.cos(theta) 
+    # ax[0].plot(w_psi_path, w_alpha_path, 'w')
+
+    # save the figure
+    plt.savefig('plots/AE_geometry_dependence.png', dpi=1000)
+
     plt.show()

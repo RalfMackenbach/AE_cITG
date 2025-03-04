@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import source.plot_settings as ps
+import matplotlib as mpl
 
 # enable LaTeX rendering
+mpl.rcParams.update(mpl.rcParamsDefault)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
@@ -50,7 +51,7 @@ ax.text(0.6, 0.125, r'$\eta < \eta_B$', ha='center', va='center')
 ax.set_aspect('equal')
 
 # save the plot
-plt.savefig('plots/stability_diagram.png', dpi=ps.dpi)
+plt.savefig('plots/stability_diagram.png', dpi=1000)
 
 # show the plot
 plt.show()
