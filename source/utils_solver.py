@@ -37,9 +37,9 @@ def solver(f, x0, method='iterative', **kwargs):
     array: The solution of the system of equations.
     """
     # set standard values for the optional keyword arguments
-    kwargs.setdefault('abs_tol', 1.0e-5)
-    kwargs.setdefault('rel_tol', 1.0e-5)
-    kwargs.setdefault('max_iter', 10000)
+    kwargs.setdefault('abs_tol', 2.0e-4)
+    kwargs.setdefault('rel_tol', 2.0e-4)
+    kwargs.setdefault('max_iter', 100000)
 
     # convert x0 to numpy array
     x0 = np.asarray(x0)

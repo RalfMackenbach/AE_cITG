@@ -99,8 +99,7 @@ def calculate_AE_arr(w_T, w_n, w_alpha, w_psi):
     if np.any(AE < 0.0):
         # print warning and set to zero
         negative_AE = AE < 0.0
-        print(f"Warning: Negative AE values at {np.sum(negative_AE)} points, with values {AE[negative_AE]}")
-        print(f"Setting negative AE values to zero.")
+        print(f"Warning: Negative AE values at {np.sum(negative_AE)} points, with values {AE[negative_AE]}. Setting to zero.")
         AE[AE < 0.0] = 0.0
 
     # make a dictionary
@@ -144,8 +143,7 @@ def calculate_AE_strong_arr(w_T, w_n, w_alpha, w_psi):
     if np.any(AE < 0.0):
         # print warning and set to zero
         negative_AE = AE < 0.0
-        print(f"Warning: Negative AE values at {np.sum(negative_AE)} points, with values {AE[negative_AE]}")
-        print(f"Setting negative AE values to zero.")
+        print(f"Warning: Negative AE values at {np.sum(negative_AE)} points, with values {AE[negative_AE]}. Setting to zero.")
         AE[AE < 0.0] = 0.0
 
     # make a dictionary

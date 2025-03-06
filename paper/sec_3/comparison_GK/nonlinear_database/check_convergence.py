@@ -4,84 +4,101 @@ import h5py
 import os
 import numpy as np
 
-path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/convergence_study'
+path_1 = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/convergence_study/nom'
+path_2 = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/convergence_study/dbl_nquad'
+path_3 = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/convergence_study/hlf_tol'
 
-# find the hdf5 files
-files = os.listdir(path)
+
+# get all the hdf5 files
+files = os.listdir(path_1)
 files = [f for f in files if f.endswith('.hdf5')]
+# sort the files
 files.sort()
-AE_high_res = []
-AE_hlf_quad = []
-AE_dbl_tol  = []
 
-# first read 20240601.hdf5
-file_name = path+'/20240601.hdf5'
-f = h5py.File(file_name,'r')
-# loop over tubes
-for main in f.keys():
-    for tube in f[main].keys():
-        AE_high_res.append(f[main][tube]['AE_val'][()])
-f.close()
+# same in all folders. make containers containing AE
+AE_1 = []
+AE_2 = []
+AE_3 = []
 
-# then read 20240601_hlf_nquad.hdf5
-file_name = path+'/20240601_hlf_nquad.hdf5'
-f = h5py.File(file_name,'r')
-# loop over tubes
-for main in f.keys():
-    for tube in f[main].keys():
-        AE_hlf_quad.append(f[main][tube]['AE_val'][()])
-f.close()
 
-# then read 20240601_dbl_tolerance.hdf5
-file_name = path+'/20240601_dbl_tolerance.hdf5'
-f = h5py.File(file_name,'r')
-# loop over tubes
-for main in f.keys():
-    for tube in f[main].keys():
-        AE_dbl_tol.append(f[main][tube]['AE_val'][()])
-f.close()
 
-# make histogram of the absolute difference and relative difference
-fig, ax = plt.subplots(2, 2, figsize=(10, 5))
-diff1 = np.abs(np.array(AE_high_res) - np.array(AE_hlf_quad))
-diff2 = np.abs(np.array(AE_high_res) - np.array(AE_dbl_tol))
-ax[0,0].hist(diff1, bins=20)
-ax[0,0].set_title(r'Absolute difference')
-ax[0,0].set_xlabel(r'$|A - A_{\rm half \; quad}|$')
-ax[0,0].set_ylabel('Counts')
 
-rel_diff1 = (diff1 / np.array(AE_high_res)) * 100
-ax[0,1].hist(rel_diff1, bins=20)
-ax[0,1].set_title(r'Relative difference')
-ax[0,1].set_xlabel(r'$|A - A_{\rm half \; quad}|/|A|$ (%)')
-ax[0,1].set_ylabel('Counts')
+# loop over the files
+# loop over the files
+for f in files:
+    # load the data
+    with h5py.File(path_1+'/'+f, 'r') as hf:
+        # get the data
+        data = hf
+        # loop over the tubes
+        for tube in data.keys():
+            # get the data
+            AE = data[tube]['AE_val'][()]
+            # append to the list
+            AE_1.append(AE)
+    with h5py.File(path_2+'/'+f, 'r') as hf:
+        # get the data
+        data = hf
+        # loop over the tubes
+        for tube in data.keys():
+            # get the data
+            AE = data[tube]['AE_val'][()]
+            # append to the list
+            AE_2.append(AE)
+    with h5py.File(path_3+'/'+f, 'r') as hf:
+        # get the data
+        data = hf
+        # loop over the tubes
+        for tube in data.keys():
+            # get the data
+            AE = data[tube]['AE_val'][()]
+            # append to the list
+            AE_3.append(AE)
 
-ax[1,0].hist(diff2, bins=20)
-ax[1,0].set_title(r'Absolute difference')
-ax[1,0].set_xlabel(r'$|A - A_{\rm double \; tol}|$')
-ax[1,0].set_ylabel('Counts')
+# convert to numpy arrays
+AE_1 = np.asarray(AE_1)
+AE_2 = np.asarray(AE_2)
+AE_3 = np.asarray(AE_3)
 
-rel_diff2 = (diff2 / np.array(AE_high_res)) * 100
-ax[1,1].hist(rel_diff2, bins=20)
-ax[1,1].set_title('Relative difference')
-ax[1,1].set_xlabel(r'$|A - A_{\rm double \; tol}|/|A|$ (%)')
-ax[1,1].set_ylabel('Counts')
+diff_1 = np.abs(AE_1 - AE_2)
+diff_2 = np.abs(AE_1 - AE_3)
 
-# log y-axis
-ax[0,0].set_yscale('log')
-ax[0,1].set_yscale('log')
-ax[1,0].set_yscale('log')
-ax[1,1].set_yscale('log')
+log_diff_1 = diff_1/np.abs(AE_1)
+log_diff_2 = diff_2/np.abs(AE_1)
 
-# set xlim to 0
-ax[0,0].set_xlim(0, None)
-ax[0,1].set_xlim(0, None)
-ax[1,0].set_xlim(0, None)
-ax[1,1].set_xlim(0, None)
+# make 2x2 plots with histogram of absolute and relative error
+fig, ax = plt.subplots(2, 2, figsize=(12,4), constrained_layout=True)
+# plot histograms
+binres = 50
+bins = np.geomspace(diff_1.min(), diff_1.max(), binres)
+ax[0,0].hist(diff_1, bins=bins)
+ax[0,0].set_xlabel(r'$A-A_{\text{dbl quad}}$')
+ax[0,0].set_ylabel('Count')
+ax[0,0].set_xscale('log')
 
-plt.tight_layout()
+bins = np.geomspace(diff_2.min(), diff_2.max(), binres)
+ax[1,0].hist(diff_2, bins=bins)
+ax[1,0].set_xlabel(r'$A-A_{\text{hlf tol}}$')
+ax[1,0].set_ylabel('Count')
+ax[1,0].set_xscale('log')
 
-# save figure
-plt.savefig('plots/convergence_study.png')
+bins = np.geomspace(log_diff_1.min()*100, log_diff_1.max()*100, binres)
+ax[0,1].hist(log_diff_1*100, bins=bins)
+ax[0,1].set_xlabel('Relative error [%]')
+ax[0,1].set_ylabel('Count')
+ax[0,1].set_xscale('log')
+
+bins = np.geomspace(log_diff_2.min()*100, log_diff_2.max()*100, binres)
+ax[1,1].hist(log_diff_2*100, bins=bins)
+ax[1,1].set_xlabel('Relative error [%]')
+ax[1,1].set_ylabel('Count')
+ax[1,1].set_xscale('log')
+
+for ax in ax.flatten():
+    ax.set_yscale('log')
+
+
+# save the figure
+plt.savefig('plots/convergence_comparison.png')
 
 plt.show()

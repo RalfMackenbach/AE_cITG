@@ -7,7 +7,8 @@ import source.ae as ae
 
 
 matts_path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/matts_data'
-AE_path    = "/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/"
+ralfs_path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/ralfs_data'
+AE_path    = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/'
 
 
 
@@ -143,7 +144,7 @@ def function_extender(dict):
 
 
 
-def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbose=True,length_scale='rho'):
+def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbose=True,length_scale='fixed'):
     # read data
     dict = AE_dictionary(data,idx_tube)
     if func_ext:
@@ -183,21 +184,24 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     if plot:
         plot_dict(result_dict)
     # add AE total to dict
-    result_dict['AE_val'] = AE_total
+    result_dict['AE_val'] = float(AE_total)
     # if Q is given, add it to dict
     if Q is not None:
-        result_dict['Q'] = Q
+        result_dict['Q'] = float(Q)
     # also add w_n and w_T
-    result_dict['w_n'] = w_n
-    result_dict['w_T'] = w_T
+    result_dict['w_n'] = float(w_n)
+    result_dict['w_T'] = float(w_T)
     # add tube index and name
-    result_dict['tube_idx'] = idx_tube
-    result_dict['tube_name'] = dict['tube_name']
+    result_dict['tube_idx'] = int(idx_tube)
+    tube_name = str(dict['tube_name'])
+    # split the tube name at the last /
+    tube_name = tube_name.split('/')[-1]
+    result_dict['tube_name'] = tube_name
     # finally, add nfp
-    result_dict['nfp'] = dict['nfp']
+    result_dict['nfp'] = int(dict['nfp'])
 
     if verbose:
-        print(f'Density: {w_n:+.3f} Temperature: {w_T:+.3f} AE: {AE_total:+.3f} Tube: {idx_tube}')
+        print(f'Density: {w_n:+.3f} Temperature: {w_T:+.3f} AE: {AE_total:+.3f} Tube: {idx_tube}', end='\r')
          # 'Tube: ',idx_tube,' AE: ',AE)
     return result_dict
 
@@ -244,6 +248,7 @@ def save_to_hdf5(list,save_path,save_name):
         for tube in tube_dict.keys():
             f.create_group(tube)
             for key in keys:
-                f[tube].create_dataset(key, data=tube_dict[tube][key])
+                data = tube_dict[tube][key]
+                f[tube].create_dataset(key, data=data)
     print('Data saved to: ',file_name)
 

@@ -231,12 +231,12 @@ def integrate_2D_AE_weighting(f, method='gaussian', **kwargs):
         # get the roots and weights in 1D
         u, u_w = sp.roots_sh_legendre(n)
         v, v_w = u.copy(), u_w.copy()
-        # create the 2D grid
-        U, V = np.meshgrid(u, v)
         weights = np.outer(u_w, v_w)
         # evaluate the function at the grid points
-        X = -np.log(1-U)
-        Y = sp.erfinv(V)**2
+        x = -np.log(1-u)
+        y = sp.erfinv(v)**2
+        # meshgrid
+        X, Y = np.meshgrid(x, y)
         function = f(X, Y)
         # Calculate the integral
         integral = np.sqrt(np.pi) * np.sum(weights * function)
@@ -246,12 +246,12 @@ def integrate_2D_AE_weighting(f, method='gaussian', **kwargs):
         n = kwargs.get('n_quad')
         u, u_w = newton_cotes_weights_uniform(n, 0)
         v, v_w = u.copy(), u_w.copy()
-        # create the 2D grid
-        U, V = np.meshgrid(u, v)
         weights = np.outer(u_w, v_w)
         # evaluate the function at the grid points
-        X = -np.log(1-U)
-        Y = sp.erfinv(V)**2
+        x = -np.log(1-u)
+        y = sp.erfinv(v)**2
+        # meshgrid
+        X, Y = np.meshgrid(x, y)
         function = f(X, Y)
         # Calculate the integral
         integral = np.sqrt(np.pi) * np.sum(weights * function)
@@ -263,11 +263,12 @@ def integrate_2D_AE_weighting(f, method='gaussian', **kwargs):
         u, u_w = newton_cotes_weights_uniform(n, 1)
         v, v_w = u.copy(), u_w.copy()
         # create the 2D grid
-        U, V = np.meshgrid(u, v)
         weights = np.outer(u_w, v_w)
         # evaluate the function at the grid points
-        X = -np.log(1-U)
-        Y = sp.erfinv(V)**2
+        x = -np.log(1-u)
+        y = sp.erfinv(v)**2
+        # meshgrid
+        X, Y = np.meshgrid(x, y)
         function = f(X, Y)
         # Calculate the integral
         integral = np.sqrt(np.pi) * np.sum(weights * function)
@@ -279,11 +280,12 @@ def integrate_2D_AE_weighting(f, method='gaussian', **kwargs):
         u, u_w = newton_cotes_weights_uniform(n, 2)
         v, v_w = u.copy(), u_w.copy()
         # create the 2D grid
-        U, V = np.meshgrid(u, v)
         weights = np.outer(u_w, v_w)
         # evaluate the function at the grid points
-        X = -np.log(1-U)
-        Y = sp.erfinv(V)**2
+        x = -np.log(1-u)
+        y = sp.erfinv(v)**2
+        # meshgrid
+        X, Y = np.meshgrid(x, y)
         function = f(X, Y)
         # Calculate the integral
         integral = np.sqrt(np.pi) * np.sum(weights * function)
@@ -295,11 +297,12 @@ def integrate_2D_AE_weighting(f, method='gaussian', **kwargs):
         u, u_w = newton_cotes_weights_uniform(n, 4)
         v, v_w = u.copy(), u_w.copy()
         # create the 2D grid
-        U, V = np.meshgrid(u, v)
         weights = np.outer(u_w, v_w)
         # evaluate the function at the grid points
-        X = -np.log(1-U)
-        Y = sp.erfinv(V)**2
+        x = -np.log(1-u)
+        y = sp.erfinv(v)**2
+        # meshgrid
+        X, Y = np.meshgrid(x, y)
         function = f(X, Y)
         # Calculate the integral
         integral = np.sqrt(np.pi) * np.sum(weights * function)
