@@ -4,20 +4,22 @@ import numpy as np
 import os
 import h5py 
 import tqdm
+import IO
 
 # enable latex rendering
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # load data in AE_processed_data
-path = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proton.me-folder/ITG_data/AE_data/'
+path = IO.AE_path
 
 # get the files
 files = os.listdir(path)
 files = [f for f in files if f.endswith('.hdf5')]
 # sort the files
 files.sort()
-
+# # only keep the first file
+# files = [files[0]]
 # initialize the data
 AEs = []
 Qs = []
@@ -89,7 +91,9 @@ c8 = 'tab:gray'
 
 nfp_labels = [r'$N_{\rm fp}=4$', r'$N_{\rm fp}=5$', r'$N_{\rm fp}=6$', r'$N_{\rm fp}=3$', r'$N_{\rm fp}=7$', r'$N_{\rm fp}=2$', r'$N_{\rm fp}=0$', r'$N_{\rm fp}=8$']
 
-colors = [c4, c5, c6, c3, c7, c2, c0, c8]
+colors = [c4,   c5,   c6,  c3,   c7,  c2,   c0,  c8]
+alphas = [0.03, 0.05, 0.1, 0.05, 0.1, 0.05, 0.1, 0.1]
+# if alphas > 1, set to 1
 
 nfp_values = [4, 5, 6, 3, 7, 2, 0, 8]
 
@@ -105,11 +109,10 @@ marker_size = 0.5
 
 for i, mask in enumerate(mask_list):
     N_vals = np.sum(mask)
-    alpha_norm = np.log2(N_vals+2)
     print(f'number of points for {nfp_labels[i]}: {N_vals}')
-    ax[ax_list[i][0], ax_list[i][1]].scatter(AEs[mask], Qs[mask], c=colors[i], alpha=alpha_val/alpha_norm, s=marker_size)
+    ax[ax_list[i][0], ax_list[i][1]].scatter(AEs[mask], Qs[mask], c=colors[i], alpha=alphas[i], s=marker_size)
     # also add to center plot
-    ax[1,1].scatter(AEs[mask], Qs[mask], c=colors[i], alpha=alpha_val/alpha_norm, s=marker_size)
+    ax[1,1].scatter(AEs[mask], Qs[mask], c=colors[i], alpha=alphas[i], s=marker_size)
 
 # add text to the top left
 for i, mask in enumerate(mask_list):
@@ -120,74 +123,89 @@ for i, mask in enumerate(mask_list):
 ax[1,1].text(0.05, 0.9, r'All', transform=ax[1,1].transAxes, fontsize=12)
 
 
+# set lower ylim to -1
+ax[1,1].set_ylim(-2, 3)
+
+# add a 3/2 power law to all plots
+lnQ = np.linspace(-1, 2, 100)
+lnA = 2/3*lnQ - 1.8
+for i in range(3):
+    for j in range(3):
+        # gray line
+        ax[i,j].plot(lnA,lnQ,ls='--',color='k')
+
+# add y label to centre-left and x label to bottom-centre
+ax[1,0].set_ylabel(r'$\log_{10} Q$')
+ax[2,1].set_xlabel(r'$\log_{10} A$')
+
 plt.show()
 # close allplots
 plt.close('all')
 
-# also scatter log10(Q) against w_n and w_T
+# # also scatter log10(Q) against w_n and w_T
 
-fig, ax = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
-# set minimal value of Q to 1e-1
-Qs_cols = np.maximum(Qs, -1)
-sc = ax[0].scatter(w_ns, w_Ts, c=Qs_cols, s=1)
-# add colorbar
-ax[0].set_xlabel(r'$\hat{\omega}_n$')
-ax[0].set_ylabel(r'$\hat{\omega}_T$')
+# fig, ax = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
+# # set minimal value of Q to 1e-1
+# Qs_cols = np.maximum(Qs, -1)
+# sc = ax[0].scatter(w_ns, w_Ts, c=Qs_cols, s=1)
+# # add colorbar
+# ax[0].set_xlabel(r'$\hat{\omega}_n$')
+# ax[0].set_ylabel(r'$\hat{\omega}_T$')
 
-# get angles
-angles = np.arctan2(w_Ts, w_ns)
-# scatter angles against Q
-sc = ax[1].scatter(angles/np.pi, Qs, c=Qs_cols, s=1)
-# add line for w_T/w_n = 2/3
-x = np.linspace(-np.pi, np.pi, 100)
-y = 2/3*x
-# add colorbar
-cbar = fig.colorbar(sc, ax=ax[1], extend='min')
-cbar.set_label(r'$\log_{10}(Q)$')
-ax[1].set_xlabel(r'$\arctan(\hat{\omega}_T/\hat{\omega}_n)/\pi$')
-ax[1].set_ylabel(r'$\log_{10}(Q)$')
-# add vline at critical angle
-ax[1].axvline(x=np.arctan(2/3)/np.pi, color='k', linestyle='--')
+# # get angles
+# angles = np.arctan2(w_Ts, w_ns)
+# # scatter angles against Q
+# sc = ax[1].scatter(angles/np.pi, Qs, c=Qs_cols, s=1)
+# # add line for w_T/w_n = 2/3
+# x = np.linspace(-np.pi, np.pi, 100)
+# y = 2/3*x
+# # add colorbar
+# cbar = fig.colorbar(sc, ax=ax[1], extend='min')
+# cbar.set_label(r'$\log_{10}(Q)$')
+# ax[1].set_xlabel(r'$\arctan(\hat{\omega}_T/\hat{\omega}_n)/\pi$')
+# ax[1].set_ylabel(r'$\log_{10}(Q)$')
+# # add vline at critical angle
+# ax[1].axvline(x=np.arctan(2/3)/np.pi, color='k', linestyle='--')
 
-# show w_T/w_n = 2/3 line
-x = np.linspace(0, 10, 100)
-y = 2/3*x
-# also add w_n = 0 line
-y_0 = 0*x
-ax[0].plot(x, y, 'k--')  
-ax[0].plot(x, y_0, 'k--')
-plt.show()
+# # show w_T/w_n = 2/3 line
+# x = np.linspace(0, 10, 100)
+# y = 2/3*x
+# # also add w_n = 0 line
+# y_0 = 0*x
+# ax[0].plot(x, y, 'k--')  
+# ax[0].plot(x, y_0, 'k--')
+# plt.show()
 
 
 
-# also scatter log10(A) against w_n and w_T
-AE_cols = np.maximum(AEs, -3)
-fig, ax = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
-sc = ax[0].scatter(w_ns, w_Ts, c=AE_cols, s=1)
-# add colorbar
-ax[0].set_xlabel(r'$\hat{\omega}_n$')
-ax[0].set_ylabel(r'$\hat{\omega}_T$')
+# # also scatter log10(A) against w_n and w_T
+# AE_cols = np.maximum(AEs, -3)
+# fig, ax = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
+# sc = ax[0].scatter(w_ns, w_Ts, c=AE_cols, s=1)
+# # add colorbar
+# ax[0].set_xlabel(r'$\hat{\omega}_n$')
+# ax[0].set_ylabel(r'$\hat{\omega}_T$')
 
-# get angles
-angles = np.arctan2(w_Ts, w_ns)
-# scatter angles against Q
-sc = ax[1].scatter(angles/np.pi, AEs, c=AE_cols, s=1)
-# add line for w_T/w_n = 2/3
-x = np.linspace(-np.pi, np.pi, 100)
-y = 2/3*x
-# add colorbar
-cbar = fig.colorbar(sc, ax=ax[1], extend='min')
-cbar.set_label(r'$\log_{10}(A)$')
-ax[1].set_xlabel(r'$\arctan(\hat{\omega}_T/\hat{\omega}_n)/\pi$')
-ax[1].set_ylabel(r'$\log_{10}(A)$')
-# add vline at critical angle
-ax[1].axvline(x=np.arctan(2/3)/np.pi, color='k', linestyle='--')
+# # get angles
+# angles = np.arctan2(w_Ts, w_ns)
+# # scatter angles against Q
+# sc = ax[1].scatter(angles/np.pi, AEs, c=AE_cols, s=1)
+# # add line for w_T/w_n = 2/3
+# x = np.linspace(-np.pi, np.pi, 100)
+# y = 2/3*x
+# # add colorbar
+# cbar = fig.colorbar(sc, ax=ax[1], extend='min')
+# cbar.set_label(r'$\log_{10}(A)$')
+# ax[1].set_xlabel(r'$\arctan(\hat{\omega}_T/\hat{\omega}_n)/\pi$')
+# ax[1].set_ylabel(r'$\log_{10}(A)$')
+# # add vline at critical angle
+# ax[1].axvline(x=np.arctan(2/3)/np.pi, color='k', linestyle='--')
 
-# show w_T/w_n = 2/3 line
-x = np.linspace(0, 10, 100)
-y = 2/3*x
-# also add w_n = 0 line
-y_0 = 0*x
-ax[0].plot(x, y, 'k--')  
-ax[0].plot(x, y_0, 'k--')
-plt.show()
+# # show w_T/w_n = 2/3 line
+# x = np.linspace(0, 10, 100)
+# y = 2/3*x
+# # also add w_n = 0 line
+# y_0 = 0*x
+# ax[0].plot(x, y, 'k--')  
+# ax[0].plot(x, y_0, 'k--')
+# plt.show()
