@@ -34,6 +34,8 @@ for f in files:
         # get the data
         data = hf
         # loop over the tubes with a progress bar
+        # print length of data
+        print(f'Number of tubes in {f}: {len(data.keys())}')
         for tube in tqdm.tqdm(data.keys(), desc=f"Processing {f}"):
             # get the data
             AE = data[tube]['AE_val'][()]
