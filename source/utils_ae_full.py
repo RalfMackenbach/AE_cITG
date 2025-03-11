@@ -3,6 +3,20 @@ import numpy as np
 import source.utils_integral as sui
 import source.utils_solver as sus
 import source.utils_ae_iso as suai
+try:
+    import torch
+    import source.nn_preconditioner.precon_nn as pnn
+    import source.nn_preconditioner.train_nn as stn
+    hu = stn.hidden_units
+    hl = stn.hidden_layers
+    _torch_available = True
+    device = torch.device("mps")
+    # get the model
+    model = pnn.SimpleNN(4, hu, hl, 2).to(device)
+    model.load_state_dict(torch.load('/Users/rjjm/Documents/GitHub/AE_cITG/source/nn_preconditioner/precon_nn.pth'))
+    model.eval()
+except:
+    _torch_available = False
 
 
 def w_star(w_n,w_T,v_perp2,v_par2):
@@ -60,10 +74,19 @@ def solve_k(w_alpha,w_psi,w_n,w_T,method='iterative',**kwargs):
     """
     Returns the solution for k_psi and k_alpha.
     """
-    # initial guess at isodynamic solution
-    k_psi = 0.0
-    k_alpha = suai.solve_tilde_k_alpha_iso(w_alpha,w_n,w_T)[0]
-    # solve the equations
+    if _torch_available:
+        # create input
+        inputs = torch.tensor(np.vstack([w_n,w_T,w_alpha,w_psi]).T).float()
+        # predict
+        outputs = model(inputs)
+        # convert to numpy
+        k_psi = outputs[0,1].detach().numpy()
+        k_alpha = outputs[0,0].detach().numpy()
+        # print('Guess from NN:',k_psi,k_alpha)
+    else:        
+        # initial guess at isodynamic solution
+        k_psi = 0.0
+        k_alpha = suai.solve_tilde_k_alpha_iso(w_alpha,w_n,w_T)[0]
     if method == 'iterative':
         k_psi, k_alpha = sus.solver(lambda x: equations_k(x[0],x[1],w_alpha,w_psi,w_n,w_T), np.array([k_psi,k_alpha]), method=method, **kwargs)
     else:
@@ -71,7 +94,7 @@ def solve_k(w_alpha,w_psi,w_n,w_T,method='iterative',**kwargs):
         eqs = lambda x: equations_k(x[0],x[1],w_alpha,w_psi,w_n,w_T) - x
         # solve the equations
         k_psi, k_alpha = sus.solver(eqs, np.array([k_psi,k_alpha]), method=method)
-
+    # print('Final:',k_psi,k_alpha)
     return k_psi, k_alpha
 
 

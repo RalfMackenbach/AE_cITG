@@ -11,6 +11,15 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import wandb
 
+
+# set hyperparameters
+batch_size = 2**13
+learning_rate = 0.001
+epochs = 1000
+weight_decay = 1e-6
+hidden_units = 32
+hidden_layers = 10
+
 # fix the seed
 torch.manual_seed(0)
 np.random.seed(0)
@@ -39,7 +48,7 @@ files = [f for f in files if f.endswith('.hdf5')]
 # sort the files
 files.sort()
 # only keep last file
-files = [files[-1]]
+files = [files[0]]
 
 k_alpha = []
 k_psi = []
@@ -84,11 +93,6 @@ print(f'Shape of arrays: {k_alpha.shape}')
 # convert to torch tensors (Nx4) and (Nx2)
 inputs = torch.tensor(np.vstack([w_n,w_T,w_alpha,w_psi]).T).float().to(mps_device)
 targets = torch.tensor(np.vstack([k_alpha,k_psi]).T).float().to(mps_device)
-# realise that the data has the following input-output relation input -> input * C , output -> output * C
-# where C is a constant. We set the constant to norm of the input
-C = torch.norm(inputs, dim=1)
-inputs = inputs / C[:,None]
-targets = targets / C[:,None]
 
 # shuffle the data
 indices = np.arange(inputs.shape[0])
@@ -109,8 +113,8 @@ train_dataset = CustomDataset(inputs_train, targets_train)
 test_dataset = CustomDataset(inputs_test, targets_test)
 
 # create data loaders
-train_loader = DataLoader(train_dataset, batch_size=int(2**13), shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=int(2**13), shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=int(batch_size), shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=int(batch_size), shuffle=False)
 
 # print info
 print(f'Number of samples: {N}')
@@ -121,26 +125,26 @@ print(f'Number of test samples: {N_test}', end='\n\n')
 wandb.init(project="precon_nn_project")
 
 # get the precon_nn model and training function
-model = pnn.SimpleNN(4, 32, 10, 2).to(mps_device)
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+model = pnn.SimpleNN(4, hidden_units, hidden_layers, 2).to(mps_device)
+# use custom loss
+def criterion(outputs, targets):
+    loss = nn.MSELoss()(outputs, targets)
+    return loss
+optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
 # Log the model configuration
 wandb.config.update({
-    "learning_rate": 0.001,
-    "epochs": 100,
-    "batch_size": int(2**13),
-    "weight_decay": 1e-5,
-    "model_architecture": "SimpleNN",
-    "input_features": 4,
-    "hidden_units": 32,
-    "hidden_layers": 10,
-    "output_features": 2
+    "batch_size": batch_size,
+    "learning_rate": learning_rate,
+    "epochs": epochs,
+    "weight_decay": weight_decay,
+    "hidden_units": hidden_units,
+    "hidden_layers": hidden_layers,
 })
 
 # train the model
 losses = []
-for epoch in range(100):
+for epoch in range(1000):
     model.train()
     for inputs_batch, targets_batch in train_loader:
         inputs_batch, targets_batch = inputs_batch.to(mps_device), targets_batch.to(mps_device)
@@ -168,11 +172,12 @@ plt.show()
 # test the model
 model.eval()
 test_loss = 0.0
+criterion_test = nn.L1Loss()
 with torch.no_grad():
     for inputs_batch, targets_batch in test_loader:
         inputs_batch, targets_batch = inputs_batch.to(mps_device), targets_batch.to(mps_device)
         outputs = model(inputs_batch)
-        loss = criterion(outputs, targets_batch)
+        loss = criterion_test(outputs, targets_batch)
         test_loss += loss.item()
 
 test_loss /= len(test_loader)

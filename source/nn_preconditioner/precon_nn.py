@@ -20,7 +20,10 @@ class SimpleNN(nn.Module):
         self.activation = nn.Softplus()
 
     def forward(self, x):
+        # rescale the input by its norm
+        norm = torch.norm(x, dim=1).reshape(-1, 1)
+        x = x / norm
         for layer in self.hidden_layers:
             x = self.activation(layer(x))
         x = self.output_layer(x)
-        return x
+        return x * norm

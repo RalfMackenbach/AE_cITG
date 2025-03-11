@@ -194,8 +194,10 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
     # add tube index and name
     result_dict['tube_idx'] = int(idx_tube)
     tube_name = str(dict['tube_name'])
-    # split the tube name at the last /
-    tube_name = tube_name.split('/')[-1]
+    # replace / with __
+    tube_name = tube_name.replace('/','__')
+    # add tube idx to name
+    tube_name = str(idx_tube) + '___' + tube_name
     result_dict['tube_name'] = tube_name
     # finally, add nfp
     result_dict['nfp'] = int(dict['nfp'])

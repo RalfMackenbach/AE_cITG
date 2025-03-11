@@ -1,4 +1,4 @@
-# These are the functions used to calculate the available energy.
+# These are the functions used to calculate the available energy in the weak-gradient limit. NOT TESTED
 import numpy as np
 import scipy.special as sp
 import scipy.integrate as spi
