@@ -9,6 +9,8 @@ import h5py
 import tqdm
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
+import wandb
+
 # fix the seed
 torch.manual_seed(0)
 np.random.seed(0)
@@ -115,10 +117,26 @@ print(f'Number of samples: {N}')
 print(f'Number of training samples: {N_train}')
 print(f'Number of test samples: {N_test}', end='\n\n')
 
+# Initialize wandb
+wandb.init(project="precon_nn_project")
+
 # get the precon_nn model and training function
 model = pnn.SimpleNN(4, 32, 10, 2).to(mps_device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+
+# Log the model configuration
+wandb.config.update({
+    "learning_rate": 0.001,
+    "epochs": 100,
+    "batch_size": int(2**13),
+    "weight_decay": 1e-5,
+    "model_architecture": "SimpleNN",
+    "input_features": 4,
+    "hidden_units": 32,
+    "hidden_layers": 10,
+    "output_features": 2
+})
 
 # train the model
 losses = []
@@ -133,6 +151,9 @@ for epoch in range(100):
         optimizer.step()
     
     losses.append(loss.item())
+    
+    # Log the loss to wandb
+    wandb.log({"epoch": epoch, "loss": loss.item()})
 
     if epoch % 1 == 0:
         print(f'Epoch {epoch}, log10(loss) = {np.log10(loss.item())}')
@@ -155,6 +176,10 @@ with torch.no_grad():
         test_loss += loss.item()
 
 test_loss /= len(test_loader)
+
+# Log the test loss to wandb
+wandb.log({"test_loss": test_loss})
+
 # print the test loss
 print(f'Test loss: {test_loss}')
 
@@ -162,3 +187,6 @@ print(f'Test loss: {test_loss}')
 # save the model
 torch.save(model.state_dict(), 'precon_nn.pth')
 print('Model saved as precon_nn.pth')
+
+# Finish the wandb run
+wandb.finish()
