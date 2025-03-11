@@ -4,7 +4,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import numpy as np
-import precon_nn as pnn
+import source.nn_preconditioner.precon_nn as pnn
 import h5py
 import tqdm
 from torch.utils.data import Dataset, DataLoader
@@ -17,8 +17,6 @@ batch_size = 2**13
 learning_rate = 0.001
 epochs = 1000
 weight_decay = 1e-6
-hidden_units = 32
-hidden_layers = 10
 
 # fix the seed
 torch.manual_seed(0)
@@ -125,7 +123,7 @@ print(f'Number of test samples: {N_test}', end='\n\n')
 wandb.init(project="precon_nn_project")
 
 # get the precon_nn model and training function
-model = pnn.SimpleNN(4, hidden_units, hidden_layers, 2).to(mps_device)
+model = pnn.SimpleNN(4, 2).to(mps_device)
 # use custom loss
 def criterion(outputs, targets):
     loss = nn.MSELoss()(outputs, targets)

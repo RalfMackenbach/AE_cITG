@@ -5,12 +5,17 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-# Set the device to MPS
+
+
+hidden_units = 32
+hidden_layers = 10
+
+
 mps_device = torch.device("mps")
 
 # Define the neural network
 class SimpleNN(nn.Module):
-    def __init__(self, input_size, hidden_size, number_layers, output_size):
+    def __init__(self, input_size, output_size, hidden_size=hidden_units, number_layers=hidden_layers):
         super(SimpleNN, self).__init__()
         self.hidden_layers = nn.ModuleList()
         self.hidden_layers.append(nn.Linear(input_size, hidden_size))

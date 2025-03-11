@@ -6,13 +6,10 @@ import source.utils_ae_iso as suai
 try:
     import torch
     import source.nn_preconditioner.precon_nn as pnn
-    import source.nn_preconditioner.train_nn as stn
-    hu = stn.hidden_units
-    hl = stn.hidden_layers
     _torch_available = True
     device = torch.device("mps")
     # get the model
-    model = pnn.SimpleNN(4, hu, hl, 2).to(device)
+    model = pnn.SimpleNN(4, 2).to(device)
     model.load_state_dict(torch.load('/Users/rjjm/Documents/GitHub/AE_cITG/source/nn_preconditioner/precon_nn.pth'))
     model.eval()
 except:
@@ -77,12 +74,12 @@ def solve_k(w_alpha,w_psi,w_n,w_T,method='iterative',**kwargs):
     if _torch_available:
         # create input
         inputs = torch.tensor(np.vstack([w_n,w_T,w_alpha,w_psi]).T).float()
+        inputs = inputs.to(device)
         # predict
         outputs = model(inputs)
-        # convert to numpy
-        k_psi = outputs[0,1].detach().numpy()
-        k_alpha = outputs[0,0].detach().numpy()
-        # print('Guess from NN:',k_psi,k_alpha)
+        # convert to numpy (k_alpha, k_psi is order)
+        k_alpha, k_psi = outputs.cpu().detach().numpy().T
+        #print('Guess from NN:',k_psi,k_alpha)
     else:        
         # initial guess at isodynamic solution
         k_psi = 0.0
@@ -94,7 +91,7 @@ def solve_k(w_alpha,w_psi,w_n,w_T,method='iterative',**kwargs):
         eqs = lambda x: equations_k(x[0],x[1],w_alpha,w_psi,w_n,w_T) - x
         # solve the equations
         k_psi, k_alpha = sus.solver(eqs, np.array([k_psi,k_alpha]), method=method)
-    # print('Final:',k_psi,k_alpha)
+    #print('Final:',k_psi,k_alpha)
     return k_psi, k_alpha
 
 
