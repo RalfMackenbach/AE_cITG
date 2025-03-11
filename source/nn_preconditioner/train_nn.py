@@ -9,6 +9,10 @@ import h5py
 import tqdm
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
+# fix the seed
+torch.manual_seed(0)
+np.random.seed(0)
+
 
 # Set the device to MPS
 mps_device = torch.device("mps")
@@ -103,8 +107,8 @@ train_dataset = CustomDataset(inputs_train, targets_train)
 test_dataset = CustomDataset(inputs_test, targets_test)
 
 # create data loaders
-train_loader = DataLoader(train_dataset, batch_size=int(2**12), shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=int(2**12), shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=int(2**13), shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=int(2**13), shuffle=False)
 
 # print info
 print(f'Number of samples: {N}')
@@ -112,9 +116,9 @@ print(f'Number of training samples: {N_train}')
 print(f'Number of test samples: {N_test}', end='\n\n')
 
 # get the precon_nn model and training function
-model = pnn.SimpleNN(4, 64, 3, 2).to(mps_device)
+model = pnn.SimpleNN(4, 32, 10, 2).to(mps_device)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
 # train the model
 losses = []
@@ -130,7 +134,7 @@ for epoch in range(100):
     
     losses.append(loss.item())
 
-    if epoch % 10 == 0:
+    if epoch % 1 == 0:
         print(f'Epoch {epoch}, log10(loss) = {np.log10(loss.item())}')
 
 # plot the loss
@@ -151,6 +155,8 @@ with torch.no_grad():
         test_loss += loss.item()
 
 test_loss /= len(test_loader)
+# print the test loss
+print(f'Test loss: {test_loss}')
 
 
 # save the model
