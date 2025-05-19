@@ -37,7 +37,7 @@ def AE_integrand_weak(v_perp2,v_par2,w_alpha,w_psi,w_n,w_T,k_psi,k_alpha):
     return integrand
 
 
-def solve_k_weak(w_alpha,w_n,w_T,method='fsolve',**kwargs):
+def solve_k_weak(w_alpha,w_psi,w_n,w_T,method='iterative',**kwargs):
     """
     Returns the solution for k_psi and k_alpha in the weakly driven limit.
     """
@@ -47,10 +47,10 @@ def solve_k_weak(w_alpha,w_n,w_T,method='fsolve',**kwargs):
     # solve the equations
     if method == 'iterative':
         # iterative solver
-        k_psi,k_alpha = equations_k_weak(k_psi,k_alpha,w_alpha,w_alpha,w_n,w_T)
+        k_psi,k_alpha = equations_k_weak(k_psi,k_alpha,w_alpha,w_psi,w_n,w_T)
     else:
         # define the equations
-        eq = lambda x: equations_k_weak(x[0],x[1],w_alpha,w_alpha,w_n,w_T) - x
+        eq = lambda x: equations_k_weak(x[0],x[1],w_alpha,w_psi,w_n,w_T) - x
         # solve the equations
         solution = sus.solver(eq,[k_psi,k_alpha],method=method,**kwargs)
         k_psi = solution[0]

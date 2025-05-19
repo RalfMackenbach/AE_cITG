@@ -18,7 +18,7 @@ data_Q      = IO.load_data(file_Q)
 # check number of tubes
 n_tubes = data['n_tubes']
 n_subsample = 1
-indices = indices = range(0, n_tubes, n_subsample)
+indices = range(0, n_tubes, n_subsample)
 # initialize arrays
 Qs = data_Q['Q_avgs_without_FSA_grad_x'][0:n_tubes]
 

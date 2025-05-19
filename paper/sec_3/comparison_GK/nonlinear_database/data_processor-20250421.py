@@ -7,7 +7,7 @@ import h5py
 path = IO.ralfs_path
 
 # load the data
-file_name   = path+"/prod_1_fixed.hdf5"
+file_name   = path+"/prod_1_random.hdf5"
 # load 
 data        = h5py.File(file_name, 'r', swmr=True)
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Save data as hdf5
     file_path = IO.AE_path
-    file_save = 'TOK_1_FIXED.hdf5'
+    file_save = 'TOK_1_RANDOM.hdf5'
     file_save = file_save.split('/')[-1]
     print('Saving to: ', file_path + file_save)
     IO.save_to_hdf5(results, file_path, file_save)

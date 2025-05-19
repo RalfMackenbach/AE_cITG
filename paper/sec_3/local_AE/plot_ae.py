@@ -6,14 +6,15 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # make grid of omega_alpha and omega_psi [-10,10]x[-10,10]
-res = 50
-w_alpha = np.linspace(-10, 10, res)
-w_psi = np.linspace(-10, 10, res)
+res = 100
+w_range = 3.0
+w_alpha = np.linspace(-2*w_range, +2*w_range, res)
+w_psi   = np.linspace(-w_range, +w_range, res)
 w_alpha_t, w_psi_t = np.meshgrid(w_alpha, w_psi)
 
 # give values to omega_n and omega_T
-w_n = 2.0
-w_T = 10.0
+w_n = 1.0
+w_T = 3.0
 
 # calculate AE for each point in the grid
 AE_full = np.zeros_like(w_alpha_t)
@@ -42,15 +43,18 @@ if __name__ == '__main__':
     # plot the results
     import matplotlib.pyplot as plt
     scale = 3/4
-    lvl_res = 25
+    lvl_res = 30
     AE_full = np.log10(AE_full)
-    AE_max = 1.0
-    AE_min = -1
+    AE_max = np.ceil(AE_full.max())
+    AE_min = -3.0
     print('\n')
     print(f"AE_min = {AE_full.min()}")
     print(f"AE_max = {AE_full.max()}")
-    kpsi_max = 3.4
-    kalpha_max = 3.2
+    kpsi_max = np.abs(kpsi_full).max()
+    kalpha_max = np.abs(kalpha_full).max()
+    # round up to nearest 0.1
+    kpsi_max = np.ceil(kpsi_max*10)/10
+    kalpha_max = np.ceil(kalpha_max*10)/10
     lvls_AE = np.linspace(AE_min, AE_max, lvl_res)
     lvls_kpsi = np.linspace(-kpsi_max, kpsi_max, lvl_res)
     lvls_kalpha = np.linspace(-kalpha_max, kalpha_max, lvl_res)

@@ -7,7 +7,7 @@ import h5py
 path = IO.ralfs_path
 
 # load the data
-file_name   = path+"/prod_1_fixed.hdf5"
+file_name   = path+"/prod_2_random.hdf5"
 # load 
 data        = h5py.File(file_name, 'r', swmr=True)
 
@@ -67,19 +67,18 @@ kx_facs = np.array(kx_facs)
 n_tubes = len(Qs)
 n_subsample = 1
 indices = range(0, n_tubes, n_subsample)
-# Function to process a single tube
+# loop over the tubes
 def process_tube(idx_tube):
     ans = IO.calc_AE(data, idx_tube, Qs[idx_tube], fprims[idx_tube], tprims[idx_tube], pol_ext=False)
     return [ans]
 
-# Use multiprocessing to parallelize the loop
 if __name__ == '__main__':
-    with mp.Pool(processes=mp.cpu_count()) as pool:
+    with mp.Pool(mp.cpu_count()) as pool:
         results = pool.map(process_tube, indices)
-
-    # Save data as hdf5
+    # save data as hdf5
     file_path = IO.AE_path
-    file_save = 'TOK_1_FIXED.hdf5'
+    file_save = 'TOK_2_RANDOM.hdf5'
+    # get rid of the /
     file_save = file_save.split('/')[-1]
     print('Saving to: ', file_path + file_save)
     IO.save_to_hdf5(results, file_path, file_save)

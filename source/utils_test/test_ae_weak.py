@@ -3,7 +3,7 @@ import multiprocessing as mp
 import source.utils_ae_weak as sua
 
 # resolution
-res = 30
+res = 10
 
 # parallel or not
 par = True
@@ -26,7 +26,8 @@ AE = np.zeros((res,res))
 def solve_k(idx):
     i, j = idx
     k_psi_val, k_alpha_val = sua.solve_k_weak(w_alpha, w_psi, w_n[i,j], w_T[i,j], method='iterative', abs_tol=1e-5, rel_tol=1e-5)
-    AE_val = sua.AE_local_weak(w_n[i,j], w_T[i,j], w_alpha, w_psi, k_alpha_val, k_psi_val)
+    # k_psi,k_alpha,w_alpha,w_psi,w_n,w_T
+    AE_val = sua.AE_local_weak(k_psi_val, k_alpha_val, w_alpha, w_psi, w_n[i,j], w_T[i,j])
     print(f'w_n = {w_n[i,j]:+.2f}, w_T = {w_T[i,j]:+.2f}, k_psi = {k_psi_val:+.2f}, k_alpha = {k_alpha_val:+.2f}, AE = {AE_val:+.2f}')
     return k_psi_val, k_alpha_val, AE_val
 
@@ -55,9 +56,9 @@ if par:
         fig, ax = plt.subplots(1, 3, figsize=(15,5), constrained_layout=True)
 
         lvl_res = 27
-        k_psi_lvls = np.linspace(-2.0, 2.0, lvl_res)
-        k_alpha_lvls = np.linspace(-15.0, 15.0, lvl_res)
-        AE_lvls = np.linspace(0.0, 2.2, lvl_res)
+        k_psi_lvls = np.linspace(-np.abs(k_psi).max(), np.abs(k_psi).max(), lvl_res)
+        k_alpha_lvls = np.linspace(-np.abs(k_alpha).max(), np.abs(k_alpha).max(), lvl_res)
+        AE_lvls = np.linspace(0.0, AE.max(), lvl_res)
 
         # use contourf
         c = ax[0].contourf(w_n, w_T, k_psi, levels=k_psi_lvls, cmap='RdBu_r')

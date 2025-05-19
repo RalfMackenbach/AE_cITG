@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-eta = np.geomspace(1.0,10,100)
+eta = np.linspace(2.9, 3.1, 3)
 
 
 def calculate_AE(w_alpha,eta_val):
-    dict =  sua.calculate_AE_arr(10.0, 10.0/eta_val, -w_alpha, np.zeros_like(w_alpha))
+    dict =  sua.calculate_AE_arr(3.0, 3.0/eta_val, w_alpha, np.zeros_like(w_alpha))
     return dict['AE'][0]
 
 def find_max_AE(eta_val):
@@ -20,10 +20,13 @@ def find_max_AE(eta_val):
     print(f'eta = {eta_val:.2f}, w_alpha = {res.x[0]:+.2f}, AE = {res.fun:+.2f}')
     return res.x[0]
 
+
+
 # do the calculation in parallel
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     results = pool.map(find_max_AE, eta)
+    print(results)
     pool.close()
     pool.join()
 
