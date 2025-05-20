@@ -1,3 +1,5 @@
+# This script plots the gradients of the nonlinear gyrokinetic simulations for the random-gradient subset.
+
 import numpy as np
 import matplotlib.pyplot as plt
 # enable latex rendering

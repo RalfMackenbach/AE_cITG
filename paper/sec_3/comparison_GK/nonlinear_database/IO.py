@@ -1,3 +1,22 @@
+"""
+IO.py
+
+This script contains functions to load, process, and save magnetic geometry and available energy (AE) data
+from various sources (pickle, HDF5, etc.) for comparative studies in gyrokinetic and AE calculations.
+
+Functions:
+    - load_data: Load data from a pickle file.
+    - AE_dictionary_matrix: Convert matrix-formatted data to a dictionary of physical quantities.
+    - AE_dictionary_tensor: Convert tensor-formatted data to a dictionary of physical quantities.
+    - AE_dictionary_hdf5: Convert HDF5-formatted data to a dictionary of physical quantities.
+    - AE_dictionary: Dispatch to the correct dictionary conversion based on data format.
+    - function_extender: Extend field-line data arrays for symmetry.
+    - npol_extender: Extend arrays to more poloidal turns (for Miller geometry).
+    - calc_AE: Calculate available energy and related quantities for a given tube.
+    - plot_dict: Plot arrays in a result dictionary.
+    - save_to_hdf5: Save a list of result dictionaries to an HDF5 file.
+"""
+
 import os
 import pickle
 import numpy as np
@@ -13,11 +32,30 @@ AE_path    = '/Users/rjjm/Library/CloudStorage/ProtonDrive-ralf.mackenbach@proto
 
 
 def load_data(file):
+    """
+    Load data from a pickle file.
+
+    Args:
+        file (str): Path to the pickle file.
+
+    Returns:
+        dict: Loaded data.
+    """
     with open(file, "rb") as f:
         data = pickle.load(f)
     return data
 
 def AE_dictionary_matrix(data, idx):
+    """
+    Convert matrix-formatted data to a dictionary of physical quantities.
+
+    Args:
+        data (dict): Data containing 'matrix', 'z_functions', etc.
+        idx (int): Index of the tube/field line.
+
+    Returns:
+        dict: Dictionary of physical quantities for the selected tube.
+    """
     # get the data, 1D array
     matrix = data['matrix'][idx,:]
     # get the z functions
@@ -44,6 +82,16 @@ def AE_dictionary_matrix(data, idx):
 
 
 def AE_dictionary_tensor(data,idx):
+    """
+    Convert tensor-formatted data to a dictionary of physical quantities.
+
+    Args:
+        data (dict): Data containing 'tensor', 'z_functions', etc.
+        idx (int): Index of the tube/field line.
+
+    Returns:
+        dict: Dictionary of physical quantities for the selected tube.
+    """
     # get the data, tensor shape
     tensor = data['tensor']
     # get the z functions
@@ -70,6 +118,16 @@ def AE_dictionary_tensor(data,idx):
     
 
 def AE_dictionary_hdf5(data,idx):
+    """
+    Convert HDF5-formatted data to a dictionary of physical quantities.
+
+    Args:
+        data (dict): Data loaded from HDF5.
+        idx (int): Index of the tube/field line.
+
+    Returns:
+        dict: Dictionary of physical quantities for the selected tube.
+    """
     # get the keys, and get the key of that index
     list_names = list(data.keys())
     name_key   = list_names[idx]
@@ -107,6 +165,16 @@ def AE_dictionary_hdf5(data,idx):
 
 
 def AE_dictionary(data,idx):
+    """
+    Dispatch to the correct dictionary conversion function based on data format.
+
+    Args:
+        data (dict): Data in matrix, tensor, or HDF5 format.
+        idx (int): Index of the tube/field line.
+
+    Returns:
+        dict: Dictionary of physical quantities for the selected tube.
+    """
     # check if the key contain matrix or tensor
     if 'matrix' in data.keys():
         dict = AE_dictionary_matrix(data, idx)
@@ -120,9 +188,15 @@ def AE_dictionary(data,idx):
 
 
 def function_extender(dict):
-    '''
-    Extend the dictionary, assuming the field line is centered at a stellarator symmetric points.
-    '''
+    """
+    Extend the dictionary arrays, assuming the field line is centered at a stellarator symmetric point.
+
+    Args:
+        dict (dict): Dictionary of physical quantities.
+
+    Returns:
+        dict: Extended dictionary.
+    """
     # get the keys 'bmag', 'gbdrift', 'cvdrift', 'gbdrift0_over_shat', 'gds2', 'gds21_over_shat', 'gds22_over_shat_squared'
     keys = list(dict.keys())
     # 'bmag' is even, so we can append the left-most point to the right
@@ -151,6 +225,15 @@ def function_extender(dict):
 
 
 def npol_extender(dict):
+    """
+    Extend arrays to more poloidal turns (specifically for Miller geometry in GX).
+
+    Args:
+        dict (dict): Dictionary of physical quantities.
+
+    Returns:
+        dict: Extended dictionary.
+    """
     # extend to more poloidal turns
     # specifically made for the Miller module of GX!!!!!!
     # first import necessary quantities
@@ -179,6 +262,24 @@ def npol_extender(dict):
 
 
 def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbose=True,length_scale='fixed',pol_ext=False):
+    """
+    Calculate available energy (AE) and related quantities for a given tube.
+
+    Args:
+        data (dict): Input data.
+        idx_tube (int): Index of the tube/field line.
+        Q (float, optional): Additional quantity to store.
+        w_n (float): Density gradient weight.
+        w_T (float): Temperature gradient weight.
+        plot (bool): Whether to plot the results.
+        func_ext (bool): Whether to extend the function arrays.
+        verbose (bool): Whether to print progress.
+        length_scale (str): Perpendicular length scale ('fixed' or 'rho').
+        pol_ext (bool): Whether to extend poloidal turns (for Miller geometry).
+
+    Returns:
+        dict: Result dictionary with AE and related quantities.
+    """
     # read data
     dict = AE_dictionary(data,idx_tube)
     # extend poloidal turns? (only for miller tokamaks)
@@ -271,6 +372,12 @@ def calc_AE(data,idx_tube,Q=None,w_n=0.9,w_T=3.0,plot=False,func_ext=True,verbos
 
 
 def plot_dict(dict):
+    """
+    Plot the arrays in a result dictionary.
+
+    Args:
+        dict (dict): Dictionary containing arrays to plot.
+    """
     # plot the data
     n = len(dict)-1
     half = int(np.ceil(n/2))
@@ -289,6 +396,17 @@ def plot_dict(dict):
 
 
 def save_to_hdf5(list,save_path,save_name):
+    """
+    Save a list of result dictionaries to an HDF5 file.
+
+    Args:
+        list (list): List of result dictionaries.
+        save_path (str): Directory to save the file.
+        save_name (str): Name of the HDF5 file.
+
+    Returns:
+        None
+    """
     # save list of result_dicts to hdf5
     # structure should be tube_name from result_dict as key, with the rest of the dict as values
     # first get the tube names

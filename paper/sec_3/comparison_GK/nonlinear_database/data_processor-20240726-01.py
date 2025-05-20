@@ -1,3 +1,5 @@
+# This script processes the data from the nonlinear gyrokinetic simulations (Landreman et al 2025)
+
 import IO
 import numpy as np
 import scipy.integrate as spi

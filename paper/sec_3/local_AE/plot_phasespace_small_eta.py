@@ -1,3 +1,6 @@
+# Here we plot the phase-space structure of the AE integrand for different values of w_alpha and w_psi
+# and a small value of eta.
+
 import source.ae as sua
 import source.utils_ae_full as suaf
 import numpy as np

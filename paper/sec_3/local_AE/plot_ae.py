@@ -1,3 +1,5 @@
+# here we plot the AE as a function of w_alpha and w_psi
+
 import source.ae as sua
 import numpy as np
 import multiprocessing as mp

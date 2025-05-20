@@ -1,3 +1,6 @@
+# Here we plot the sweet spot where AE is maximal for different values of eta
+# (for fixed w_n, w_T, and w_psi=0)
+
 import source.ae as sua
 import numpy as np
 import scipy.optimize as opt

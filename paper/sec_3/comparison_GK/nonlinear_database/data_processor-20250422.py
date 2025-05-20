@@ -1,3 +1,5 @@
+# This script is used to process the data from the nonlinear gyrokinetic simulations (tokamaks)
+
 import IO
 import numpy as np
 import scipy.integrate as spi

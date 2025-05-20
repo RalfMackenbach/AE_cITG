@@ -1,3 +1,5 @@
+# This script is used to check the convergence of the AE calculation
+
 # check diff between high res and low res calc
 import matplotlib.pyplot as plt
 import h5py

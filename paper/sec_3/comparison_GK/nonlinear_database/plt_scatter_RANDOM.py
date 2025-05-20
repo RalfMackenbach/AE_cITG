@@ -1,3 +1,6 @@
+# Here we plot the scatter plot of AE and Q for all the tubes in the database
+# with random gradients
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os

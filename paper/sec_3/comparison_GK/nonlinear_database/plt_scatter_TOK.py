@@ -1,3 +1,5 @@
+# Here the scatter plot with L_con is created
+
 # plot the scatter
 import matplotlib.pyplot as plt
 import numpy as np
