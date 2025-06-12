@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 """
-This file shows how to do some basic regression and classification tasks
-with the dataset of nonlinear gyrokinetic simulations in
-Landreman et al, (2025), "How does ion temperature gradient turbulence
-depend on magnetic geometry? Insights from data and machine learning"
+This script is adjusted from Matt's (2025) regression and
+classification analysis, and instead performs it on available
+energy.
 """
 
 import numpy as np
@@ -59,8 +58,8 @@ a_over_Ln_tok = a_over_Ln[tokamask_random]
 a_over_Ln_stel = a_over_Ln[~tokamask_random]
 
 # settings of cv
-cv = KFold(n_splits=10, shuffle=True)
-score_measure='neg_log_loss' #'accuracy'
+cv = KFold(n_splits=5, shuffle=True)
+score_measure='accuracy' #'neg_log_loss' #'accuracy'
 
 ###############################################################################
 # Evaluate Spearman correlation with the heat flux for fixed gradients
@@ -69,11 +68,11 @@ score_measure='neg_log_loss' #'accuracy'
 
 Q_fixed_stel_new = np.where(Q_fixed_stel < 0.1, 0.0, Q_fixed_stel)
 Spearman_correlation = spearmanr(AE_fixed_stel, Q_fixed_stel_new, nan_policy='omit')[0]
-print("Spearman correlation with the heat flux for fixed gradients (stellarators):", Spearman_correlation)
+print("Spearman correlation with the heat flux for fixed gradients (stellarators): {:.4g}".format(Spearman_correlation))
 
 Q_fixed_tok_new = np.where(Q_fixed_tok < 0.1, 0.0, Q_fixed_tok)
 Spearman_correlation = spearmanr(AE_fixed_tok, Q_fixed_tok_new, nan_policy='omit')[0]
-print("Spearman correlation with the heat flux for fixed gradients (tokamaks):", Spearman_correlation)
+print("Spearman correlation with the heat flux for fixed gradients (tokamaks): {:.4g}".format(Spearman_correlation))
 
 
 
@@ -83,11 +82,11 @@ print("Spearman correlation with the heat flux for fixed gradients (tokamaks):",
 
 Q_random_stel_new = np.where(Q_random_stel < 0.1, 0.0, Q_random_stel)
 Spearman_correlation = spearmanr(AE_random_stel, Q_random_stel_new, nan_policy='omit')[0]
-print("Spearman correlation with the heat flux for random gradients (stellarators):", Spearman_correlation)
+print("Spearman correlation with the heat flux for random gradients (stellarators): {:.4g}".format(Spearman_correlation))
 
 Q_random_tok_new = np.where(Q_random_tok < 0.1, 0.0, Q_random_tok)
 Spearman_correlation = spearmanr(AE_random_tok, Q_random_tok_new, nan_policy='omit')[0]
-print("Spearman correlation with the heat flux for random gradients (tokamaks):", Spearman_correlation)
+print("Spearman correlation with the heat flux for random gradients (tokamaks): {:.4g}".format(Spearman_correlation))
 
 
 ###############################################################################
@@ -107,7 +106,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBRegressor())
 Y_regression = np.log(Q_fixed_stel[mask])
 X_regression = X_regression[mask, :]
 cv_scores = cross_val_score(estimator, X_regression, Y_regression, cv=cv, verbose=0)
-print("R^2 for regression on ln Q for fixed gradients (stellarators):", np.mean(cv_scores))
+print("R^2 for regression on ln Q for fixed gradients (stellarators): {:.4g}".format(np.mean(cv_scores)))
 
 
 X_regression = np.column_stack(
@@ -124,7 +123,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBRegressor())
 Y_regression = np.log(Q_fixed_tok[mask])
 X_regression = X_regression[mask, :]
 cv_scores = cross_val_score(estimator, X_regression, Y_regression, cv=cv, verbose=0)
-print("R^2 for regression on ln Q for fixed gradients (tokamaks):", np.mean(cv_scores))
+print("R^2 for regression on ln Q for fixed gradients (tokamaks): {:.4g}".format(np.mean(cv_scores)))
 
 ###############################################################################
 # XGBoost regression using a/LT, a/Ln, and the optimized feature:
@@ -146,7 +145,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBRegressor())
 Y_regression = np.log(Q_random_stel[mask])
 X_regression = X_regression[mask, :]
 cv_scores = cross_val_score(estimator, X_regression, Y_regression, cv=cv, verbose=0)
-print("R^2 for regression on ln Q for random gradients (stellarators):", np.mean(cv_scores))
+print("R^2 for regression on ln Q for random gradients (stellarators): {:.4g}".format(np.mean(cv_scores)))
 
 
 X_regression = np.column_stack(
@@ -165,7 +164,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBRegressor())
 Y_regression = np.log(Q_random_tok[mask])
 X_regression = X_regression[mask, :]
 cv_scores = cross_val_score(estimator, X_regression, Y_regression, cv=cv, verbose=0)
-print("R^2 for regression on ln Q for random gradients (tokamaks):", np.mean(cv_scores))
+print("R^2 for regression on ln Q for random gradients (tokamaks): {:.4g}".format(np.mean(cv_scores)))
 
 
 # ###############################################################################
@@ -184,7 +183,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBClassifier())
 cv_scores = cross_val_score(
     estimator, X_classification, mask_stel, cv=cv, verbose=0, scoring=score_measure
 )
-print("Accuracy for fixed-gradient classification (stellarators):", np.mean(cv_scores))
+print("Accuracy for fixed-gradient classification (stellarators): {:.4g}".format(np.mean(cv_scores)))
 
 mask_tok = Q_fixed_tok > 0.1
 
@@ -198,7 +197,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBClassifier())
 cv_scores = cross_val_score(
     estimator, X_classification, mask_tok, cv=cv, verbose=0, scoring=score_measure
 )
-print("Accuracy for fixed-gradient classification (tokamaks):", np.mean(cv_scores))
+print("Accuracy for fixed-gradient classification (tokamaks): {:.4g}".format(np.mean(cv_scores)))
 
 
 # ###############################################################################
@@ -219,7 +218,7 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBClassifier())
 cv_scores = cross_val_score(
     estimator, X_classification, mask_stel, cv=cv, verbose=0, scoring=score_measure
 )
-print("Accuracy for random-gradient classification (stellarators):", np.mean(cv_scores))
+print("Accuracy for random-gradient classification (stellarators): {:.4g}".format(np.mean(cv_scores)))
 
 mask_tok = Q_random_tok > 0.1
 
@@ -235,5 +234,5 @@ estimator = make_pipeline(StandardScaler(), xgb.XGBClassifier())
 cv_scores = cross_val_score(
     estimator, X_classification, mask_tok, cv=cv, verbose=0, scoring=score_measure
 )
-print("Accuracy for random-gradient classification (tokamaks):", np.mean(cv_scores))
+print("Accuracy for random-gradient classification (tokamaks): {:.4g}".format(np.mean(cv_scores)))
 # ###############################################################################
