@@ -249,18 +249,23 @@ ax[1, 1].set_ylabel(r'$\log_{10} \widehat{A}$')
 cbar4 = fig.colorbar(sc4, ax=ax[1, 1], extend='min', orientation='horizontal', pad=0.1)
 cbar4.set_label(r'$\log_{10} \widehat{A} $')
 
-# Add a line where angle = arctan(2/3) only for the bottom row
+# Add a line where angle = arctan(2/3) and eta=1 (arctan(1)) only for the bottom row
 for j in range(2):
     ax[1, j].axvline(x=np.arctan(2/3) / np.pi, color='r', linestyle='--', label=r'$\arctan(2/3)/\pi$', lw=1)
+    ax[1, j].axvline(x=np.arctan(1.0) / np.pi, color='gray', linestyle='--', lw=1)
 
-
+# Add w_T = 2/3*w_N (red dashed) and w_T = w_N (black dashed) lines to top row
+w_n_line = np.linspace(0, 100, 100)
+for j in range(2):
+    ax[0, j].plot(w_n_line, 2/3 * w_n_line, 'r', lw=1, linestyle='--')
+    ax[0, j].plot(w_n_line, w_n_line, 'gray', lw=1, linestyle='--')
 
 # Set range for y-axis in the top row
-ax[0, 0].set_ylim(bottom=0)
-ax[0, 1].set_ylim(bottom=0)
+ax[0, 0].set_ylim(bottom=np.min(w_Ts), top=np.max(w_Ts))
+ax[0, 1].set_ylim(bottom=np.min(w_Ts), top=np.max(w_Ts))
 # set range for x-axis in top row
-ax[0, 0].set_xlim(left=np.min(w_ns))
-ax[0, 1].set_xlim(left=np.min(w_ns))
+ax[0, 0].set_xlim(left=np.min(w_ns), right=np.max(w_ns))
+ax[0, 1].set_xlim(left=np.min(w_ns), right=np.max(w_ns))
 # add w_T=2/3*w_N line
 for j in range(2):
     ax[0, j].plot(np.linspace(0, 100, 100), 2/3 * np.linspace(0, 100, 100), 'r--', lw=1)

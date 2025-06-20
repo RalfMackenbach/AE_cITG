@@ -56,10 +56,10 @@ for i, (w_alpha, w_psi) in enumerate(zip(w_alpha_values, w_psi_values)):
 for i, (w_alpha, w_psi) in enumerate(zip(w_alpha_values, w_psi_values)):
     ax = axes[i // 2, i % 2]
     arr_map = arrs[i]
-    max_val = np.max(arr_map)
+    max_val = np.max(2*vperp*arr_map)
     min_val = 0.0
     levels = np.linspace(min_val, max_val, 20)
-    contour = ax.contourf(vpar, vperp, arr_map, cmap='gist_heat_r', levels=levels)
+    contour = ax.contourf(vpar, vperp, 2*vperp*arr_map, cmap='gist_heat_r', levels=levels)
     ax.set_title(r'$(\hat{\omega}_\alpha, \hat{\omega}_\psi) = $' + rf'$({w_alpha}, {w_psi})$')
     ax.set_xlabel(r'$\hat{v}_{\|}$')
     ax.set_ylabel(r'$\hat{v}_{\perp}$')

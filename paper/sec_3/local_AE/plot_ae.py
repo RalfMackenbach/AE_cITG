@@ -63,12 +63,14 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots(1, 3, figsize=(scale*8.0, scale*8.0/2.4), constrained_layout=True)
     
-    # Plot AE_full
+    # Plot AE_full with filled contours and white contour lines
     cf0 = ax[0].contourf(w_psi_t, w_alpha_t, AE_full, levels=lvls_AE, cmap='gist_heat_r', extend='min')
     cbar0 = plt.colorbar(cf0, ax=ax[0], orientation='horizontal', location='top', ticks=[AE_min, AE_max])
     cbar0.set_label(r'$\log_{10} \widehat{A}$')
     ax[0].set_xlabel(r'$\hat{\omega}_{\psi}$')
     ax[0].set_ylabel(r'$\hat{\omega}_{\alpha}$')
+    # Add white contour lines
+    cl0 = ax[0].contour(w_psi_t, w_alpha_t, AE_full, levels=lvls_AE, colors='white', linewidths=0.5, linestyles='solid')
     
     # Plot kpsi_full
     cf1 = ax[2].contourf(w_psi_t, w_alpha_t, kpsi_full, levels=lvls_kpsi, cmap='PiYG')

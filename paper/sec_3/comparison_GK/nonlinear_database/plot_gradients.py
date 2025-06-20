@@ -51,11 +51,11 @@ def gen_prims(idx):
 
 
 
-# calculate eta for a 1000 random indices and plot histogram
+# calculate eta for a 30001 random indices and plot histogram
 angles = []
 tprims = []
 fprims = []
-for i in range(0,107):
+for i in range(0,30001):
     print(i)
     tprim, fprim = gen_prims(i)
     eta = tprim / fprim
