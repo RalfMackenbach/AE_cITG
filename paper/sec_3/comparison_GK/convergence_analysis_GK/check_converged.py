@@ -17,7 +17,7 @@ keys_random = list(data_random.keys())
 if True:
     # compare other key values against the first key, fixed data. Only on unstable data (where Q of the first key > 0.1)
     unstable_threshold = 0.1
-    convergence_threshold = 1.2
+    convergence_threshold = 0.2
     # make matrix to store the results of fixed (keys x # data points)
     data_number_fixed = len(data_fixed[keys_fixed[0]])
     results_fixed = np.zeros((len(keys_fixed), data_number_fixed))
@@ -44,17 +44,18 @@ if True:
         elif first_value > unstable_threshold:
             unstable_counter += 1
             # check if any other value is greater than the convergence threshold
-            if np.any(column_data/first_value > convergence_threshold):
+            rel_err = np.abs(column_data/first_value-1)
+            if np.any(rel_err > convergence_threshold):
                 unstable_unconverged_counter += 1
     # print the results
-    print(f"Fixed stable data points: {stable_counter}, of which {stable_unconverged_counter} are unconverged, i.e. {stable_unconverged_counter/stable_counter*100:.2f}%")
-    print(f"Fixed unstable data points: {unstable_counter}, of which {unstable_unconverged_counter} are unconverged, i.e. {unstable_unconverged_counter/unstable_counter*100:.2f}%")
+    print(f"Fixed stable data points: {stable_counter}, of which {stable_counter-stable_unconverged_counter} are converged, i.e. {(stable_counter-stable_unconverged_counter)/stable_counter*100:.2f}%")
+    print(f"Fixed unstable data points: {unstable_counter}, of which {unstable_counter-unstable_unconverged_counter} are converged, i.e. {(unstable_counter-unstable_unconverged_counter)/unstable_counter*100:.2f}%")
         
 # same thing for random data
 if True:
     # compare other key values against the first key, random data. Only on unstable data (where Q of the first key > 0.1)
     unstable_threshold = 0.1
-    convergence_threshold = 1.2
+    convergence_threshold = 0.2
     # make matrix to store the results of random (keys x # data points)
     data_number_random = len(data_random[keys_random[0]])
     results_random = np.zeros((len(keys_random), data_number_random))
@@ -81,8 +82,9 @@ if True:
         elif first_value > unstable_threshold:
             unstable_counter += 1
             # check if any other value is greater than the convergence threshold
-            if np.any(column_data/first_value > convergence_threshold):
+            rel_err = np.abs(column_data/first_value-1)
+            if np.any(rel_err > convergence_threshold):
                 unstable_unconverged_counter += 1
     # print the results
-    print(f"Random stable data points: {stable_counter}, of which {stable_unconverged_counter} are unconverged, i.e. {stable_unconverged_counter/stable_counter*100:.2f}%")
-    print(f"Random unstable data points: {unstable_counter}, of which {unstable_unconverged_counter} are unconverged, i.e. {unstable_unconverged_counter/unstable_counter*100:.2f}%")
+    print(f"Random stable data points: {stable_counter}, of which {stable_counter-stable_unconverged_counter} are converged, i.e. {(stable_counter-stable_unconverged_counter)/stable_counter*100:.2f}%")
+    print(f"Random unstable data points: {unstable_counter}, of which {unstable_counter-unstable_unconverged_counter} are converged, i.e. {(unstable_counter-unstable_unconverged_counter)/unstable_counter*100:.2f}%")
