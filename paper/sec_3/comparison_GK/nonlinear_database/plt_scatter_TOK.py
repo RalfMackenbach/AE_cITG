@@ -64,7 +64,7 @@ for f in files:
 AEs = np.log10(np.array(AEs))
 Qs = np.log10(np.array(Qs))
 L_cons = np.array(L_cons)  # Keep L_cons linear
-# only keep Rmaj between 9.0 and 10.0
+# only keep Rmaj between Rmin and Rmax
 R = np.array(R)
 
 Rmin = 1.0
@@ -76,7 +76,7 @@ Qs = Qs[(R > Rmin) & (R < Rmax)]
 L_cons = L_cons[(R > Rmin) & (R < Rmax)]
 R = R[(R > Rmin) & (R < Rmax)]
 # filter out L_cons < threshold
-threshold = 1.0
+threshold = 0.0
 AEs = AEs[L_cons > threshold]
 Qs = Qs[L_cons > threshold]
 L_cons = L_cons[L_cons > threshold]
