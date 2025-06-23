@@ -32,7 +32,7 @@ for ax, npz_file in zip(axes, npz_files):
         label = r'{}'.format(label)
         if label == r'input':
             label = 'nominal'
-        ax.scatter(x_plot, y, label=label, s=2, marker=markers[i%len(markers)], alpha=1.0)
+        ax.scatter(x_plot, y, label=label, s=3, marker=markers[i%len(markers)], alpha=1.0)
     x_line = np.linspace(-1,2,100)
     y_line = x_line
     ax.plot(x_line, y_line, 'k--', label=r'$Q_{\rm nom}= Q_{\rm res}$')
