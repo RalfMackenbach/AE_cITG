@@ -95,22 +95,34 @@ lnA = 2/3 * lnQ - 2.0
 
 # scatter
 fac = 3/4/2
-fig, ax = plt.subplots(figsize=(fac*8, fac*8*0.75), constrained_layout=True)
-sc = ax.scatter(AEs, Qs, s=0.8, c=L_cons, cmap='CMRmap_r', alpha=1.0, edgecolors='none', vmin=Lmin, vmax=Lmax)
-# set ticklabels
+fig, axs = plt.subplots(1, 2, figsize=(fac*16, fac*8*0.80), constrained_layout=True)
+
+# First subplot: original scatter
+size = 0.4
+sc = axs[0].scatter(AEs, Qs, s=size, c=L_cons, cmap='CMRmap_r', alpha=1.0, edgecolors='none', vmin=Lmin, vmax=Lmax)
+axs[0].plot(lnA, lnQ, 'k--', label=r'$Q \propto A^{3/2}$')
+axs[0].set_xlabel(r'$\log_{10} \widehat{A} $')
+axs[0].set_ylabel(r'$\log_{10} Q$')
+axs[0].set_ylim(-2, 4)
+axs[0].set_xlim(-4, 0)
+
+# Second subplot: Q / AE**(3/2) vs L_con
+Q_over_AE32 = Qs - 1.5 * AEs  # log10(Q / AE^{3/2})
+sc2 = axs[1].scatter(L_cons, Q_over_AE32, s=size, c=L_cons, cmap='CMRmap_r', alpha=1.0, edgecolors='none', vmin=Lmin, vmax=Lmax)
+axs[1].set_xlabel(r'$\log_{10}(L_{\mathrm{con}}/a_{\rm minor})$' if log_L else r'$L_{\mathrm{con}}/a_{\rm minor}$')
+axs[1].set_ylabel(r'$\log_{10}Q - \log_{10} \widehat{A}^{3/2}$')
+axs[1].set_xlim(Lmin, Lmax)
+axs[1].axhline(3.0, color='k', linestyle='--')
+axs[1].set_ylim(-1,6)
+
+# Only include colorbar on the second plot (shared across both subplots)
+cbar = fig.colorbar(sc2, ax=axs, ticks=[Lmin, (Lmin+Lmax)/2, Lmax])
 if log_L:
-    cbar = fig.colorbar(sc, ax=ax, ticks=[0, 1, 2])
-    cbar.set_ticklabels([r'$0$', r'$1$', r'$2$'])
+    cbar.set_ticklabels([f'{Lmin:.1f}', f'{((Lmin+Lmax)/2):.1f}', f'{Lmax:.1f}'])
 else:
-    cbar = fig.colorbar(sc, ax=ax, ticks=[1, 50, 100])
-    cbar.set_ticklabels([r'$1$', r'$50$', r'$100$'])
-cbar.solids.set_alpha(1)
+    cbar.set_ticklabels([f'{Lmin:.0f}', f'{((Lmin+Lmax)/2):.0f}', f'{Lmax:.0f}'])
 cbar.set_label(r'$\log_{10}(L_{\mathrm{con}}/a_{\rm minor})$' if log_L else r'$L_{\mathrm{con}}/a_{\rm minor}$')
-ax.plot(lnA, lnQ, 'k--', label=r'$Q \propto A^{3/2}$')
-ax.set_xlabel(r'$\log_{10} \widehat{A} $')
-ax.set_ylabel(r'$\log_{10} Q$')
-ax.set_ylim(-2, 3)
-ax.set_xlim(-4, 0)
+cbar.solids.set_alpha(1)
 
 # save the figure
 plt.savefig('plots/scatter_AE_Q_L.png', dpi=1000)

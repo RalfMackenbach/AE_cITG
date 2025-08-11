@@ -165,9 +165,9 @@ for i, mask in enumerate(mask_list):
 
 # add all data to the center plot
 # plot the scatter for else
-ax[1,1].scatter(AEs[(~mask_quasr)], Qs[(~mask_quasr)], s=marker_size, c=else_c, alpha=alpha_val, edgecolors='none')
+ax[1,1].scatter(AEs[(~mask_quasr)], Qs[(~mask_quasr)], s=marker_size/10, c=else_c, alpha=alpha_val, edgecolors='none')
 # plot the scatter for quasr
-ax[1,1].scatter(AEs[mask_quasr], Qs[mask_quasr], s=marker_size, c=quasr_c, alpha=alpha_val, edgecolors='none')
+ax[1,1].scatter(AEs[mask_quasr], Qs[mask_quasr], s=marker_size/10, c=quasr_c, alpha=alpha_val, edgecolors='none')
 
 # Add two empty points for the legend
 ax[1, 1].scatter([], [], s=1, c=quasr_c, alpha=1, label=r'\textsc{quasr}')
